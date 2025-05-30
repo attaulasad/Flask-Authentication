@@ -1,5 +1,6 @@
 __pycac*
 venv
+.env
 secret*
 revok*
 app.log
