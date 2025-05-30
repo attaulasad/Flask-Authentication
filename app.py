@@ -2,11 +2,17 @@ from flask import Flask, request, jsonify, abort, render_template, redirect, url
 from crypto_utils import encrypt_data, decrypt_data, validate_and_update_token, delete_user_and_get_token
 from datetime import datetime, timedelta
 from log_utils import log_action
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
 app = Flask(__name__)
-app.secret_key = "supersecretkey"  # Needed for flash messages
+
+secret_key = os.getenv("secret_key")
+ADMIN_API_KEY = os.getenv("ADMIN_API_KEY")
 
 # === User API Routes ===
+
 
 @app.route('/encrypt', methods=['POST'])
 def encrypt_route():
@@ -21,18 +27,19 @@ def encrypt_route():
         "expiry": (datetime.now() + timedelta(minutes=expiry_minutes)).isoformat(),
         "deleted": False
     }
-
     token = encrypt_data(user_data)
     log_action("user created", user_data, f"token: {token}")
     return jsonify({"token": token})
+
+
+
 
 @app.route('/decrypt', methods=['POST'])
 def decrypt_route():
     token = request.json.get("token")
     try:
         result, error = validate_and_update_token(token)
-        if error:
-            return jsonify({"error": error}), 403
+        if error: return jsonify({"error": error}), 403
 
         user_data, updated_token = result
         log_action("accessed /decrypt", user_data, f"updated_token: {updated_token}")
@@ -41,49 +48,57 @@ def decrypt_route():
             "user_data": user_data,
             "updated_token": updated_token
         })
-    except Exception as e:
-        return jsonify({"error": f"Invalid token: {str(e)}"}), 400
+    except Exception as e: return jsonify({"error": f"Invalid token: {str(e)}"}), 400
+
+
+
 
 @app.route('/status', methods=['POST'])
 def status_route():
     token = request.json.get("token")
     try:
         user_data = decrypt_data(token)
-        if user_data.get("deleted"):
-            return jsonify({"status": "deleted", "message": "User has been deleted"}), 403
+        if user_data.get("deleted"): return jsonify({"status": "deleted", "message": "User has been deleted"}), 403
 
         expiry_time = datetime.fromisoformat(user_data["expiry"])
         status = "active" if datetime.now() < expiry_time else "expired"
-
         return jsonify({
             "status": status,
             "credits": user_data["credits"],
             "expiry": user_data["expiry"]
         })
-    except Exception as e:
-        return jsonify({"error": f"Invalid token: {str(e)}"}), 400
+    except Exception as e: return jsonify({"error": f"Invalid token: {str(e)}"}), 400
+
+
+
 
 @app.route('/delete_user', methods=['POST'])
 def delete_user():
     token = request.headers.get("Authorization")
-    if not token:
-        return jsonify({"error": "Token missing"}), 400
+    if not token:return jsonify({"error": "Token missing"}), 400
 
     message, error = delete_user_and_get_token(token)
-    if error:
-        return jsonify({"error": error}), 401
+    if error: return jsonify({"error": error}), 401
 
     log_action("user deleted via API", {"token": token})
     return jsonify({"message": message}), 200
 
-# === Admin API Routes ===
 
-ADMIN_API_KEY = "myadminkey123"  # TODO: Move to environment variables for security
+
+
+
+
+#############################################3
+# === Admin API Routes ===
+#############################################
+
 
 def check_admin():
     key = request.headers.get("x-api-key")
     if key != ADMIN_API_KEY:
         abort(403, "Forbidden: Invalid Admin Key")
+
+
 
 @app.route('/admin/create_user', methods=['POST'])
 def admin_create_user():
@@ -103,6 +118,8 @@ def admin_create_user():
     token = encrypt_data(user_data)
     log_action("admin created user", user_data, f"token: {token}")
     return jsonify({"message": "User created", "token": token})
+
+
 
 @app.route('/admin/refill_credits', methods=['POST'])
 def admin_refill_credits():
@@ -125,6 +142,9 @@ def admin_refill_credits():
         return jsonify({"message": "Credits added", "new_token": new_token, "user_data": user_data})
     except Exception as e:
         return jsonify({"error": f"Failed to update credits: {str(e)}"}), 400
+
+
+
 
 @app.route('/admin/extend_time', methods=['POST'])
 def admin_extend_time():
@@ -149,7 +169,13 @@ def admin_extend_time():
     except Exception as e:
         return jsonify({"error": f"Failed to extend time: {str(e)}"}), 400
 
+
+
+
+#############################################3
 # === Admin Dashboard GUI ===
+#############################################
+
 
 @app.route('/admin')
 def admin_dashboard():
@@ -172,6 +198,9 @@ def create_user_form():
     log_action("admin created user via form", user_data, f"token: {token}")
     flash(f"User created! Token: {token}", "success")
     return redirect(url_for('admin_dashboard', new_token=token))
+
+
+
 
 @app.route('/admin/refill_credits_form', methods=['POST'])
 def refill_credits_form():
@@ -197,6 +226,9 @@ def refill_credits_form():
     except Exception as e:
         flash(f"Error: {str(e)}", "danger")
         return redirect(url_for('admin_dashboard'))
+
+
+
 
 @app.route('/admin/extend_time_form', methods=['POST'])
 def extend_time_form():
@@ -224,6 +256,8 @@ def extend_time_form():
         flash(f"Error: {str(e)}", "danger")
         return redirect(url_for('admin_dashboard'))
 
+
+
 @app.route('/admin/check_user_status_form', methods=['POST'])
 def check_user_status_form():
     token = request.form.get('token')
@@ -248,6 +282,9 @@ def check_user_status_form():
         flash(f"Invalid or revoked token: {str(e)}", "danger")
         return redirect(url_for('admin_dashboard'))
 
+
+
+
 @app.route('/admin/delete_user_form', methods=['POST'])
 def delete_user_form():
     token = request.form.get('token')
@@ -259,5 +296,10 @@ def delete_user_form():
         flash(f"{message}. The token is now invalid.", "success")
     return redirect(url_for('admin_dashboard'))
 
+
+
+
+
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port="5000", debug=True)
