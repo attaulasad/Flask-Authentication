@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Dashboard</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f4f6f8;
+      margin: 0;
+      padding: 0;
+    }
+
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+      margin-top: 40px;
+      font-size: 2.5rem;
+    }
+
+    section {
+      margin: 40px auto;
+      max-width: 500px;
+      background-color: #fff;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      color: #333;
+      border-left: 4px solid #007bff;
+      padding-left: 10px;
+    }
+
+    form label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #555;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    textarea {
+      width: 100%;
+      padding: 10px 12px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 15px;
+      background-color: #fefefe;
+    }
+
+    textarea {
+      resize: none;
+    }
+
+    button {
+      display: inline-block;
+      padding: 12px 24px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+      background: linear-gradient(to right, #007bff, #0056b3);
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      width: 100%;
+    }
+
+    button:hover {
+      background: linear-gradient(to right, #0056b3, #003f8a);
+    }
+
+    .flash {
+      margin: 20px auto;
+      max-width: 500px;
+      padding: 15px;
+      border-radius: 8px;
+      font-weight: 500;
+    }
+
+    .flash.success {
+      background-color: #e9f7ef;
+      color: #2e7d32;
+      border: 1px solid #c8e6c9;
+    }
+
+    .flash.danger {
+      background-color: #fbe9e7;
+      color: #c62828;
+      border: 1px solid #f5c6cb;
+    }
+
+    .flash.info {
+      background-color: #e3f2fd;
+      color: #1565c0;
+      border: 1px solid #90caf9;
+    }
+
+    .note {
+      margin-bottom: 20px;
+      color: #555;
+      font-size: 14px;
+      font-style: italic;
+    }
+
+    @media (max-width: 600px) {
+      section {
+        margin: 20px;
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Admin Dashboard</h1>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="flash {{ category }}">{{ message|safe }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <section>
+    <h2>Create User</h2>
+    <p class="note"><strong>Note:</strong> After creating a user, copy the new token from the success message for further operations.</p>
+    <form method="POST" action="{{ url_for('create_user_form') }}">
+      <label for="name">Name</label>
+      <input type="text" name="name" id="name" placeholder="Enter user name" required />
+
+      <label for="credits">Credits</label>
+      <input type="number" name="credits" id="credits" value="10" min="0" required />
+
+      <label for="expiry_minutes">Expiry (minutes)</label>
+      <input type="number" name="expiry_minutes" id="expiry_minutes" value="60" min="1" required />
+
+      <button type="submit">Create User</button>
+    </form>
+  </section>
+
+  <section>
+    <h2>Refill Credits</h2>
+    <p class="note"><strong>Note:</strong> After refilling credits, use the new token provided in the success message.</p>
+    <form method="POST" action="{{ url_for('refill_credits_form') }}">
+      <label for="token_credits">User Token</label>
+      <input type="text" name="token" id="token_credits" placeholder="Paste user token here" required value="{{ new_token|default('') }}" />
+
+      <label for="add_credits">Add Credits</label>
+      <input type="number" name="add_credits" id="add_credits" value="10" min="1" required />
+
+      <button type="submit">Refill Credits</button>
+    </form>
+  </section>
+
+  <section>
+    <h2>Extend Time</h2>
+    <p class="note"><strong>Note:</strong> After extending time, use the new token provided in the success message.</p>
+    <form method="POST" action="{{ url_for('extend_time_form') }}">
+      <label for="token_time">User Token</label>
+      <input type="text" name="token" id="token_time" placeholder="Paste user token here" required value="{{ new_token|default('') }}" />
+
+      <label for="add_minutes">Add Minutes</label>
+      <input type="number" name="add_minutes" id="add_minutes" value="30" min="1" required />
+
+      <button type="submit">Extend Time</button>
+    </form>
+  </section>
+
+  <section>
+    <h2>Check User Status</h2>
+    <form method="POST" action="{{ url_for('check_user_status_form') }}">
+      <label for="token_status">User Token</label>
+      <input type="text" name="token" id="token_status" placeholder="Paste user token here" required value="{{ new_token|default('') }}" />
+      <button type="submit">Check Status</button>
+    </form>
+  </section>
+
+  <section>
+    <h2>Delete User</h2>
+    <form method="POST" action="{{ url_for('delete_user_form') }}">
+      <label for="token_delete">User Token</label>
+      <input type="text" name="token" id="token_delete" placeholder="Paste user token here" required value="{{ new_token|default('') }}" />
+      <button type="submit">Delete User</button>
+    </form>
+  </section>
+
+  {% if new_token %}
+  <section>
+    <h2>New Token</h2>
+    <p>Copy this token for further operations:</p>
+    <textarea readonly rows="4" style="width: 100%">{{ new_token }}</textarea>
+  </section>
+  {% endif %}
+
+</body>
+</html>
