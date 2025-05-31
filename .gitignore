@@ -4,3 +4,5 @@ secret*
 revok*
 app.log
 user_act*
+.env
+users.db

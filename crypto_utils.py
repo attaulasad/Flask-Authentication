@@ -1,7 +1,9 @@
 from cryptography.fernet import Fernet
+import sqlite3
 import json
 from datetime import datetime, timedelta
 from log_utils import log_action
+import os
 
 # Load or generate encryption key
 try:
@@ -14,51 +16,70 @@ except FileNotFoundError:
 
 cipher = Fernet(key)
 
-# File-based revocation list
-REVOKED_FILE = "revoked_tokens.txt"
+# Database path
+DB_PATH = os.getenv("DB_PATH", "users.db")
 
-def load_revoked_tokens():
-    """Load revoked tokens from file."""
-    try:
-        with open(REVOKED_FILE, "r") as f:
-            return set(line.strip() for line in f if line.strip())
-    except FileNotFoundError:
-        return set()
+def init_db():
+    """Initialize the database with revoked_tokens table."""
+    with sqlite3.connect(DB_PATH) as conn:
+        c = conn.cursor()
+        c.execute("""
+            CREATE TABLE IF NOT EXISTS revoked_tokens (
+                token TEXT PRIMARY KEY,
+                revoked_at TEXT
+            )
+        """)
+        conn.commit()
 
-def save_revoked_token(token: str):
-    """Save a revoked token to file."""
-    with open(REVOKED_FILE, "a") as f:
-        f.write(token + "\n")
+# Initialize database
+init_db()
 
-# Initialize revoked tokens
-revoked_tokens = load_revoked_tokens()
+def get_db_connection():
+    """Get a database connection."""
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+def is_token_revoked(token: str) -> bool:
+    """Check if token is revoked."""
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute("SELECT token FROM revoked_tokens WHERE token = ?", (token,))
+        return c.fetchone() is not None
+
+def revoke_token(token: str):
+    """Revoke a token by adding it to the database."""
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute("INSERT INTO revoked_tokens (token, revoked_at) VALUES (?, ?)",
+                  (token, datetime.now().isoformat()))
+        conn.commit()
 
 def encrypt_data(data: dict) -> str:
     """Encrypt user data into a token."""
-    log_action("encrypting data", data, f"data: {data}")
     json_data = json.dumps(data)
     token = cipher.encrypt(json_data.encode())
+    log_action("encrypted data", data, f"token: {token.decode()[:20]}...")
     return token.decode()
 
 def decrypt_data(token: str) -> dict:
-    """Decrypt token into user data, checking revocation first."""
-    if token in revoked_tokens:
-        log_action("attempted decrypt with revoked token", {"token": token})
+    """Decrypt token into user data, checking revocation."""
+    if is_token_revoked(token):
+        log_action("attempted decrypt with revoked token", {"token": token[:20] + "..."})
         raise Exception("Token has been revoked")
-    decrypted = cipher.decrypt(token.encode())
-    return json.loads(decrypted.decode())
+    try:
+        decrypted = cipher.decrypt(token.encode())
+        return json.loads(decrypted.decode())
+    except Exception as e:
+        raise Exception(f"Decryption failed: {str(e)}")
 
 def validate_and_update_token(token: str) -> tuple:
-    """
-    Validate the token, check expiry, credits, and deleted status,
-    decrement credits, return updated user_data and new token.
-    """
+    """Validate token, check expiry/credits/deleted, decrement credits, return updated data."""
     try:
-        if token in revoked_tokens:
+        if is_token_revoked(token):
             return None, "Token revoked"
 
         user_data = decrypt_data(token)
-
         if user_data.get("deleted", False):
             return None, "User is deleted"
 
@@ -71,19 +92,15 @@ def validate_and_update_token(token: str) -> tuple:
 
         user_data["credits"] -= 1
         updated_token = encrypt_data(user_data)
-
         return (user_data, updated_token), None
     except Exception as e:
         return None, f"Invalid token or decryption failed: {str(e)}"
 
 def delete_user_and_get_token(token: str) -> tuple:
-    """
-    Revoke token without decrypting. Returns success message.
-    """
+    """Revoke token without decrypting."""
     try:
-        if token not in revoked_tokens:
-            revoked_tokens.add(token)
-            save_revoked_token(token)
+        if not is_token_revoked(token):
+            revoke_token(token)
         return "User deleted successfully", None
     except Exception as e:
         return None, f"Deletion failed: {str(e)}"

@@ -75,6 +75,27 @@
       background: linear-gradient(to right, #0056b3, #003f8a);
     }
 
+    .logout-button {
+      display: inline-block;
+      padding: 12px 24px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+      background: linear-gradient(to right, #dc3545, #a71d2a);
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      text-align: center;
+      text-decoration: none;
+      margin: 20px auto;
+      display: block;
+      max-width: 200px;
+    }
+
+    .logout-button:hover {
+      background: linear-gradient(to right, #a71d2a, #7a1a1f);
+    }
+
     .flash {
       margin: 20px auto;
       max-width: 500px;
@@ -108,6 +129,30 @@
       font-style: italic;
     }
 
+    .revoked-tokens {
+      margin-top: 20px;
+    }
+
+    .revoked-tokens ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .revoked-tokens li {
+      background-color: #f9f9f9;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+    }
+
+    .new-token-section {
+      background-color: #e9f7ef;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
     @media (max-width: 600px) {
       section {
         margin: 20px;
@@ -119,6 +164,8 @@
 <body>
   <h1>Admin Dashboard</h1>
 
+  <a href="{{ url_for('logout') }}" class="logout-button">Logout</a>
+
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
       {% for category, message in messages %}
@@ -129,7 +176,7 @@
 
   <section>
     <h2>Create User</h2>
-    <p class="note"><strong>Note:</strong> After creating a user, copy the new token from the success message for further operations.</p>
+    <p class="note"><strong>Note:</strong> After creating a user, copy the token from the 'New Token' section below.</p>
     <form method="POST" action="{{ url_for('create_user_form') }}">
       <label for="name">Name</label>
       <input type="text" name="name" id="name" placeholder="Enter user name" required />
@@ -146,7 +193,7 @@
 
   <section>
     <h2>Refill Credits</h2>
-    <p class="note"><strong>Note:</strong> After refilling credits, use the new token provided in the success message.</p>
+    <p class="note"><strong>Note:</strong> After refilling credits, use the new token from the 'New Token' section below.</p>
     <form method="POST" action="{{ url_for('refill_credits_form') }}">
       <label for="token_credits">User Token</label>
       <input type="text" name="token" id="token_credits" placeholder="Paste user token here" required value="{{ new_token|default('') }}" />
@@ -160,7 +207,7 @@
 
   <section>
     <h2>Extend Time</h2>
-    <p class="note"><strong>Note:</strong> After extending time, use the new token provided in the success message.</p>
+    <p class="note"><strong>Note:</strong> After extending time, use the new token from the 'New Token' section below.</p>
     <form method="POST" action="{{ url_for('extend_time_form') }}">
       <label for="token_time">User Token</label>
       <input type="text" name="token" id="token_time" placeholder="Paste user token here" required value="{{ new_token|default('') }}" />
@@ -191,12 +238,30 @@
   </section>
 
   {% if new_token %}
-  <section>
+  <section class="new-token-section">
     <h2>New Token</h2>
-    <p>Copy this token for further operations:</p>
+    <p><strong>Important:</strong> Copy this token for further operations. It will not be displayed in notifications.</p>
     <textarea readonly rows="4" style="width: 100%">{{ new_token }}</textarea>
   </section>
   {% endif %}
+
+  <section>
+    <h2>Revoked Tokens</h2>
+    {% if revoked_tokens %}
+      <div class="revoked-tokens">
+        <ul>
+          {% for token in revoked_tokens %}
+            <li>
+              <strong>Token:</strong> {{ token.token[:20] }}... (truncated)<br>
+              <strong>Revoked At:</strong> {{ token.revoked_at }}
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% else %}
+      <p>No revoked tokens found.</p>
+    {% endif %}
+  </section>
 
 </body>
 </html>

@@ -1,10 +1,64 @@
-from flask import Flask, request, jsonify, abort, render_template, redirect, url_for, flash
-from crypto_utils import encrypt_data, decrypt_data, validate_and_update_token, delete_user_and_get_token
+from flask import Flask, request, jsonify, abort, render_template, redirect, url_for, flash, session
+from crypto_utils import encrypt_data, decrypt_data, validate_and_update_token, delete_user_and_get_token, get_db_connection
 from datetime import datetime, timedelta
 from log_utils import log_action
+from werkzeug.security import generate_password_hash, check_password_hash
+from functools import wraps
+import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = "supersecretkey"  # Needed for flash messages
+app.secret_key = os.getenv("FLASK_SECRET_KEY")
+if not app.secret_key:
+    raise ValueError("FLASK_SECRET_KEY environment variable must be set")
+
+# Set session timeout to 15 minutes
+app.permanent_session_lifetime = timedelta(minutes=15)
+
+# Admin credentials
+ADMIN_USERNAME = os.getenv("ADMIN_USERNAME")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
+if not ADMIN_USERNAME or not ADMIN_PASSWORD:
+    raise ValueError("ADMIN_USERNAME and ADMIN_PASSWORD environment variables must be set")
+ADMIN_PASSWORD_HASH = generate_password_hash(ADMIN_PASSWORD)
+
+# Admin API key
+ADMIN_API_KEY = os.getenv("ADMIN_API_KEY")
+if not ADMIN_API_KEY:
+    raise ValueError("ADMIN_API_KEY environment variable must be set")
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get('logged_in'):
+            flash("Please log in to access the admin dashboard.", "danger")
+            return redirect(url_for('login', next=request.url))
+        return f(*args, **kwargs)
+    return decorated_function
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        if username == ADMIN_USERNAME and check_password_hash(ADMIN_PASSWORD_HASH, password):
+            session['logged_in'] = True
+            session.permanent = True
+            flash("Logged in successfully!", "success")
+            next_url = request.args.get('next') or url_for('admin_dashboard')
+            return redirect(next_url)
+        else:
+            flash("Invalid username or password.", "danger")
+    return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session.pop('logged_in', None)
+    flash("Logged out successfully.", "success")
+    return redirect(url_for('login'))
 
 # === User API Routes ===
 
@@ -23,7 +77,7 @@ def encrypt_route():
     }
 
     token = encrypt_data(user_data)
-    log_action("user created", user_data, f"token: {token}")
+    log_action("user created", user_data, f"token: {token[:20]}...")
     return jsonify({"token": token})
 
 @app.route('/decrypt', methods=['POST'])
@@ -35,7 +89,7 @@ def decrypt_route():
             return jsonify({"error": error}), 403
 
         user_data, updated_token = result
-        log_action("accessed /decrypt", user_data, f"updated_token: {updated_token}")
+        log_action("accessed /decrypt", user_data, f"updated_token: {updated_token[:20]}...")
         return jsonify({
             "message": "Access granted",
             "user_data": user_data,
@@ -73,12 +127,10 @@ def delete_user():
     if error:
         return jsonify({"error": error}), 401
 
-    log_action("user deleted via API", {"token": token})
+    log_action("user deleted via API", {"token": token[:20] + "..."})
     return jsonify({"message": message}), 200
 
 # === Admin API Routes ===
-
-ADMIN_API_KEY = "myadminkey123"  # TODO: Move to environment variables for security
 
 def check_admin():
     key = request.headers.get("x-api-key")
@@ -101,7 +153,7 @@ def admin_create_user():
     }
 
     token = encrypt_data(user_data)
-    log_action("admin created user", user_data, f"token: {token}")
+    log_action("admin created user", user_data, f"token: {token[:20]}...")
     return jsonify({"message": "User created", "token": token})
 
 @app.route('/admin/refill_credits', methods=['POST'])
@@ -121,7 +173,7 @@ def admin_refill_credits():
         old_credits = user_data["credits"]
         user_data["credits"] += add_credits
         new_token = encrypt_data(user_data)
-        log_action(f"credits refilled (+{add_credits}) from {old_credits} to {user_data['credits']}", user_data, f"old_token: {token}, new_token: {new_token}")
+        log_action(f"credits refilled (+{add_credits}) from {old_credits} to {user_data['credits']}", user_data, f"old_token: {token[:20]}..., new_token: {new_token[:20]}...")
         return jsonify({"message": "Credits added", "new_token": new_token, "user_data": user_data})
     except Exception as e:
         return jsonify({"error": f"Failed to update credits: {str(e)}"}), 400
@@ -144,7 +196,7 @@ def admin_extend_time():
         new_expiry = expiry + timedelta(minutes=add_minutes)
         user_data["expiry"] = new_expiry.isoformat()
         new_token = encrypt_data(user_data)
-        log_action(f"expiry extended (+{add_minutes} mins)", user_data, f"old_token: {token}, new_token: {new_token}")
+        log_action(f"expiry extended (+{add_minutes} mins)", user_data, f"old_token: {token[:20]}..., new_token: {new_token[:20]}...")
         return jsonify({"message": "Time extended", "new_token": new_token, "user_data": user_data})
     except Exception as e:
         return jsonify({"error": f"Failed to extend time: {str(e)}"}), 400
@@ -152,11 +204,21 @@ def admin_extend_time():
 # === Admin Dashboard GUI ===
 
 @app.route('/admin')
+@login_required
 def admin_dashboard():
     new_token = request.args.get('new_token', '')
-    return render_template('admin_dashboard.html', new_token=new_token)
+    try:
+        with get_db_connection() as conn:
+            c = conn.cursor()
+            c.execute("SELECT token, revoked_at FROM revoked_tokens ORDER BY revoked_at DESC")
+            revoked_tokens = [{"token": row["token"], "revoked_at": row["revoked_at"]} for row in c.fetchall()]
+        return render_template('admin_dashboard.html', new_token=new_token, revoked_tokens=revoked_tokens)
+    except Exception as e:
+        flash(f"Error loading dashboard: {str(e)}", "danger")
+        return redirect(url_for('login'))
 
 @app.route('/admin/create_user_form', methods=['POST'])
+@login_required
 def create_user_form():
     name = request.form.get('name', 'unknown')
     credits = int(request.form.get('credits', 10))
@@ -169,11 +231,12 @@ def create_user_form():
         "deleted": False
     }
     token = encrypt_data(user_data)
-    log_action("admin created user via form", user_data, f"token: {token}")
-    flash(f"User created! Token: {token}", "success")
+    log_action("admin created user via form", user_data, f"token: {token[:20]}...")
+    flash("User created! Copy the token from the 'New Token' section below.", "success")
     return redirect(url_for('admin_dashboard', new_token=token))
 
 @app.route('/admin/refill_credits_form', methods=['POST'])
+@login_required
 def refill_credits_form():
     token = request.form.get('token')
     add_credits = int(request.form.get('add_credits', 0))
@@ -191,14 +254,15 @@ def refill_credits_form():
         old_credits = user_data["credits"]
         user_data["credits"] += add_credits
         new_token = encrypt_data(user_data)
-        log_action(f"credits refilled via form (+{add_credits}) from {old_credits} to {user_data['credits']}", user_data, f"old_token: {token}, new_token: {new_token}")
-        flash(f"Credits added! New token: {new_token} (Credits: {user_data['credits']}). Use this new token for further operations.", "success")
+        log_action(f"credits refilled via form (+{add_credits}) from {old_credits} to {user_data['credits']}", user_data, f"old_token: {token[:20]}..., new_token: {new_token[:20]}...")
+        flash(f"Credits added! New credits: {user_data['credits']}. Copy the new token from the 'New Token' section below.", "success")
         return redirect(url_for('admin_dashboard', new_token=new_token))
     except Exception as e:
         flash(f"Error: {str(e)}", "danger")
         return redirect(url_for('admin_dashboard'))
 
 @app.route('/admin/extend_time_form', methods=['POST'])
+@login_required
 def extend_time_form():
     token = request.form.get('token')
     add_minutes = int(request.form.get('add_minutes', 30))
@@ -217,14 +281,15 @@ def extend_time_form():
         new_expiry = expiry + timedelta(minutes=add_minutes)
         user_data["expiry"] = new_expiry.isoformat()
         new_token = encrypt_data(user_data)
-        log_action(f"expiry extended via form (+{add_minutes} mins)", user_data, f"old_token: {token}, new_token: {new_token}")
-        flash(f"Time extended! New token: {new_token}. Use this new token for further operations.", "success")
+        log_action(f"expiry extended via form (+{add_minutes} mins)", user_data, f"old_token: {token[:20]}..., new_token: {new_token[:20]}...")
+        flash(f"Time extended! Copy the new token from the 'New Token' section below.", "success")
         return redirect(url_for('admin_dashboard', new_token=new_token))
     except Exception as e:
         flash(f"Error: {str(e)}", "danger")
         return redirect(url_for('admin_dashboard'))
 
 @app.route('/admin/check_user_status_form', methods=['POST'])
+@login_required
 def check_user_status_form():
     token = request.form.get('token')
     try:
@@ -249,13 +314,14 @@ def check_user_status_form():
         return redirect(url_for('admin_dashboard'))
 
 @app.route('/admin/delete_user_form', methods=['POST'])
+@login_required
 def delete_user_form():
     token = request.form.get('token')
     message, error = delete_user_and_get_token(token)
     if error:
         flash(f"Error deleting user: {error}", "danger")
     else:
-        log_action("user deleted via admin form", {"token": token})
+        log_action("user deleted via admin form", {"token": token[:20] + "..."})
         flash(f"{message}. The token is now invalid.", "success")
     return redirect(url_for('admin_dashboard'))
 
