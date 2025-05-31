@@ -20,7 +20,7 @@
 
     section {
       margin: 40px auto;
-      max-width: 500px;
+      max-width: 600px;
       background-color: #fff;
       border-radius: 12px;
       padding: 30px;
@@ -43,6 +43,7 @@
     }
 
     input[type="text"],
+    input[type="password"],
     input[type="number"],
     textarea {
       width: 100%;
@@ -98,7 +99,7 @@
 
     .flash {
       margin: 20px auto;
-      max-width: 500px;
+      max-width: 600px;
       padding: 15px;
       border-radius: 8px;
       font-weight: 500;
@@ -129,24 +130,42 @@
       font-style: italic;
     }
 
-    .revoked-tokens {
+    .api-keys-table {
+      width: 100%;
+      border-collapse: collapse;
       margin-top: 20px;
     }
 
-    .revoked-tokens ul {
-      list-style: none;
-      padding: 0;
-    }
-
-    .revoked-tokens li {
-      background-color: #f9f9f9;
-      padding: 10px;
-      margin-bottom: 10px;
-      border-radius: 8px;
+    .api-keys-table th, .api-keys-table td {
       border: 1px solid #ddd;
+      padding: 12px;
+      text-align: left;
     }
 
-    .new-token-section {
+    .api-keys-table th {
+      background-color: #f1f1f1;
+      font-weight: 600;
+    }
+
+    .api-key-hidden {
+      font-family: monospace;
+      color: #555;
+    }
+
+    .toggle-api-key {
+      background: none;
+      border: none;
+      color: #007bff;
+      cursor: pointer;
+      font-size: 14px;
+      margin-left: 10px;
+    }
+
+    .toggle-api-key:hover {
+      color: #0056b3;
+    }
+
+    .new-api-key-section {
       background-color: #e9f7ef;
       padding: 15px;
       border-radius: 8px;
@@ -158,8 +177,19 @@
         margin: 20px;
         padding: 20px;
       }
+      .api-keys-table {
+        font-size: 14px;
+      }
     }
   </style>
+  <script>
+    function toggleApiKey(button, apiKeyId) {
+      const apiKeyElement = document.getElementById(apiKeyId);
+      const isHidden = apiKeyElement.textContent === '************************';
+      apiKeyElement.textContent = isHidden ? apiKeyElement.dataset.apiKey : '************************';
+      button.textContent = isHidden ? 'Hide' : 'Show';
+    }
+  </script>
 </head>
 <body>
   <h1>Admin Dashboard</h1>
@@ -176,10 +206,13 @@
 
   <section>
     <h2>Create User</h2>
-    <p class="note"><strong>Note:</strong> After creating a user, copy the token from the 'New Token' section below.</p>
+    <p class="note"><strong>Note:</strong> After creating a user, copy the API key and token from the 'New API Key' section below.</p>
     <form method="POST" action="{{ url_for('create_user_form') }}">
-      <label for="name">Name</label>
-      <input type="text" name="name" id="name" placeholder="Enter user name" required />
+      <label for="username">Username/Email</label>
+      <input type="text" name="username" id="username" placeholder="Enter username or email" required />
+
+      <label for="password">Password</label>
+      <input type="password" name="password" id="password" placeholder="Enter password" required />
 
       <label for="credits">Credits</label>
       <input type="number" name="credits" id="credits" value="10" min="0" required />
@@ -193,10 +226,10 @@
 
   <section>
     <h2>Refill Credits</h2>
-    <p class="note"><strong>Note:</strong> After refilling credits, use the new token from the 'New Token' section below.</p>
+    <p class="note"><strong>Note:</strong> After refilling credits, use the new token from the 'New API Key' section below.</p>
     <form method="POST" action="{{ url_for('refill_credits_form') }}">
-      <label for="token_credits">User Token</label>
-      <input type="text" name="token" id="token_credits" placeholder="Paste user token here" required value="{{ new_token|default('') }}" />
+      <label for="api_key_credits">API Key</label>
+      <input type="text" name="api_key" id="api_key_credits" placeholder="Paste API key here" required value="{{ new_api_key|default('') }}" />
 
       <label for="add_credits">Add Credits</label>
       <input type="number" name="add_credits" id="add_credits" value="10" min="1" required />
@@ -207,10 +240,10 @@
 
   <section>
     <h2>Extend Time</h2>
-    <p class="note"><strong>Note:</strong> After extending time, use the new token from the 'New Token' section below.</p>
+    <p class="note"><strong>Note:</strong> After extending time, use the new token from the 'New API Key' section below.</p>
     <form method="POST" action="{{ url_for('extend_time_form') }}">
-      <label for="token_time">User Token</label>
-      <input type="text" name="token" id="token_time" placeholder="Paste user token here" required value="{{ new_token|default('') }}" />
+      <label for="api_key_time">API Key</label>
+      <input type="text" name="api_key" id="api_key_time" placeholder="Paste API key here" required value="{{ new_api_key|default('') }}" />
 
       <label for="add_minutes">Add Minutes</label>
       <input type="number" name="add_minutes" id="add_minutes" value="30" min="1" required />
@@ -222,8 +255,8 @@
   <section>
     <h2>Check User Status</h2>
     <form method="POST" action="{{ url_for('check_user_status_form') }}">
-      <label for="token_status">User Token</label>
-      <input type="text" name="token" id="token_status" placeholder="Paste user token here" required value="{{ new_token|default('') }}" />
+      <label for="api_key_status">API Key</label>
+      <input type="text" name="api_key" id="api_key_status" placeholder="Paste API key here" required value="{{ new_api_key|default('') }}" />
       <button type="submit">Check Status</button>
     </form>
   </section>
@@ -231,37 +264,54 @@
   <section>
     <h2>Delete User</h2>
     <form method="POST" action="{{ url_for('delete_user_form') }}">
-      <label for="token_delete">User Token</label>
-      <input type="text" name="token" id="token_delete" placeholder="Paste user token here" required value="{{ new_token|default('') }}" />
+      <label for="api_key_delete">API Key</label>
+      <input type="text" name="api_key" id="api_key_delete" placeholder="Paste API key here" required value="{{ new_api_key|default('') }}" />
       <button type="submit">Delete User</button>
     </form>
   </section>
 
-  {% if new_token %}
-  <section class="new-token-section">
-    <h2>New Token</h2>
-    <p><strong>Important:</strong> Copy this token for further operations. It will not be displayed in notifications.</p>
+  {% if new_api_key and new_token %}
+  <section class="new-api-key-section">
+    <h2>New API Key</h2>
+    <p><strong>Important:</strong> Copy the API key and token for further operations. They will not be displayed in notifications.</p>
+    <label>API Key:</label>
+    <textarea readonly rows="2" style="width: 100%">{{ new_api_key }}</textarea>
+    <label>Token:</label>
     <textarea readonly rows="4" style="width: 100%">{{ new_token }}</textarea>
   </section>
   {% endif %}
 
   <section>
-    <h2>Revoked Tokens</h2>
-    {% if revoked_tokens %}
-      <div class="revoked-tokens">
-        <ul>
-          {% for token in revoked_tokens %}
-            <li>
-              <strong>Token:</strong> {{ token.token[:20] }}... (truncated)<br>
-              <strong>Revoked At:</strong> {{ token.revoked_at }}
-            </li>
+    <h2>Active API Keys</h2>
+    {% if active_api_keys %}
+      <table class="api-keys-table">
+        <thead>
+          <tr>
+            <th>Username/Email</th>
+            <th>API Key</th>
+            <th>Credits</th>
+            <th>Token (Truncated)</th>
+            <th>Expiry</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for key in active_api_keys %}
+            <tr>
+              <td>{{ key.username }}</td>
+              <td>
+                <span class="api-key-hidden" id="api-key-{{ loop.index }}" data-api-key="{{ key.api_key }}">************************</span>
+                <button class="toggle-api-key" onclick="toggleApiKey(this, 'api-key-{{ loop.index }}')">Show</button>
+              </td>
+              <td>{{ key.credits }}</td>
+              <td>{{ key.token[:8] }}...</td>
+              <td>{{ key.expiry }}</td>
+            </tr>
           {% endfor %}
-        </ul>
-      </div>
+        </tbody>
+      </table>
     {% else %}
-      <p>No revoked tokens found.</p>
+      <p>No active API keys found.</p>
     {% endif %}
   </section>
-
 </body>
 </html>
