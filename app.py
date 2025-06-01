@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify, abort, render_template, redirect, url_for, flash, session
-from crypto_utils import encrypt_data, decrypt_data, get_db_connection
+from crypto_utils import encrypt_data, decrypt_data, get_db_connection, encrypt_user_acc_data, decrypt_user_acc_data
 from datetime import datetime, timedelta
 from log_utils import log_action
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -32,27 +32,116 @@ ADMIN_API_KEY = os.getenv("ADMIN_API_KEY")
 if not ADMIN_API_KEY:
     raise ValueError("ADMIN_API_KEY environment variable must be set")
 
-# Initialize database
+# Initialize and migrate database
 def init_db():
     with get_db_connection() as conn:
         c = conn.cursor()
+        # Create accounts table
         c.execute("""
-            CREATE TABLE IF NOT EXISTS api_keys (
-                api_key TEXT PRIMARY KEY,
-                username TEXT NOT NULL,
+            CREATE TABLE IF NOT EXISTS accounts (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT NOT NULL UNIQUE,
+                password TEXT NOT NULL,
                 created_at TIMESTAMP
             )
         """)
-        c.execute("""
-            CREATE TABLE IF NOT EXISTS user_tokens (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                api_key TEXT NOT NULL,
-                token TEXT NOT NULL,
-                credits INTEGER NOT NULL,
-                expiry TIMESTAMP NOT NULL,
-                FOREIGN KEY (api_key) REFERENCES api_keys(api_key)
-            )
-        """)
+        # Create or migrate api_keys
+        c.execute("PRAGMA table_info(api_keys)")
+        columns = [row['name'] for row in c.fetchall()]
+        has_username = 'username' in columns
+        has_account_id = 'account_id' in columns
+
+        if not has_username and has_account_id:
+            # api_keys schema is correct
+            pass
+        elif has_username and not has_account_id:
+            # Migrate old api_keys
+            print("Migrating api_keys table...")
+            c.execute("SELECT api_key, username, created_at FROM api_keys")
+            api_keys = c.fetchall()
+            c.execute("""
+                CREATE TABLE api_keys_new (
+                    api_key TEXT PRIMARY KEY,
+                    account_id INTEGER NOT NULL,
+                    created_at TIMESTAMP,
+                    FOREIGN KEY (account_id) REFERENCES accounts(id)
+                )
+            """)
+            for row in api_keys:
+                api_key = row['api_key']
+                username = row['username']
+                created_at = row['created_at']
+                encrypted_username = encrypt_user_acc_data(username)
+                encrypted_password = encrypt_user_acc_data('migrated_password')
+                c.execute("INSERT OR IGNORE INTO accounts (username, password, created_at) VALUES (?, ?, ?)",
+                          (encrypted_username, encrypted_password, created_at))
+                c.execute("SELECT id FROM accounts WHERE username = ?", (encrypted_username,))
+                account_id = c.fetchone()['id']
+                c.execute("INSERT INTO api_keys_new (api_key, account_id, created_at) VALUES (?, ?, ?)",
+                          (api_key, account_id, created_at))
+            c.execute("DROP TABLE api_keys")
+            c.execute("ALTER TABLE api_keys_new RENAME TO api_keys")
+            print("Migration complete.")
+        else:
+            # Create api_keys with correct schema
+            c.execute("""
+                CREATE TABLE IF NOT EXISTS api_keys (
+                    api_key TEXT PRIMARY KEY,
+                    account_id INTEGER NOT NULL,
+                    created_at TIMESTAMP,
+                    FOREIGN KEY (account_id) REFERENCES accounts(id)
+                )
+            """)
+
+        # Create or migrate user_tokens
+        c.execute("PRAGMA table_info(user_tokens)")
+        columns = [row['name'] for row in c.fetchall()]
+        has_api_key = 'api_key' in columns
+        has_account_id = 'account_id' in columns
+
+        if not has_api_key and has_account_id:
+            # user_tokens schema is correct
+            pass
+        elif has_api_key and not has_account_id:
+            # Migrate user_tokens
+            print("Migrating user_tokens table...")
+            c.execute("""
+                SELECT ut.id, ut.api_key, ut.token, ut.credits, ut.expiry, ak.account_id
+                FROM user_tokens ut
+                JOIN api_keys ak ON ut.api_key = ak.api_key
+            """)
+            tokens = c.fetchall()
+            c.execute("""
+                CREATE TABLE user_tokens_new (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    account_id INTEGER NOT NULL,
+                    token TEXT NOT NULL,
+                    credits INTEGER NOT NULL,
+                    expiry TIMESTAMP NOT NULL,
+                    FOREIGN KEY (account_id) REFERENCES accounts(id)
+                )
+            """)
+            for row in tokens:
+                c.execute("""
+                    INSERT INTO user_tokens_new (id, account_id, token, credits, expiry)
+                    VALUES (?, ?, ?, ?, ?)
+                """, (row['id'], row['account_id'], row['token'], row['credits'], row['expiry']))
+            c.execute("DROP TABLE user_tokens")
+            c.execute("ALTER TABLE user_tokens_new RENAME TO user_tokens")
+            print("Migration complete.")
+        else:
+            # Create user_tokens with correct schema
+            c.execute("""
+                CREATE TABLE IF NOT EXISTS user_tokens (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    account_id INTEGER NOT NULL,
+                    token TEXT NOT NULL,
+                    credits INTEGER NOT NULL,
+                    expiry TIMESTAMP NOT NULL,
+                    FOREIGN KEY (account_id) REFERENCES accounts(id)
+                )
+            """)
+
         conn.commit()
 
 init_db()
@@ -102,6 +191,9 @@ def encrypt_route():
     credits = int(data.get("credits", 10))
     expiry_minutes = int(data.get("expiry_minutes", 60))
 
+    if not username or not password:
+        return jsonify({"error": "Username and password are required"}), 400
+
     api_key = generate_api_key(username, password)
     user_data = {
         "username": username,
@@ -114,16 +206,25 @@ def encrypt_route():
     with get_db_connection() as conn:
         c = conn.cursor()
         try:
-            c.execute("INSERT INTO api_keys (api_key, username, created_at) VALUES (?, ?, ?)",
-                      (api_key, username, datetime.now()))
-            c.execute("INSERT INTO user_tokens (api_key, token, credits, expiry) VALUES (?, ?, ?, ?)",
-                      (api_key, token, credits, datetime.now() + timedelta(minutes=expiry_minutes)))
+            encrypted_username = encrypt_user_acc_data(username)
+            encrypted_password = encrypt_user_acc_data(password)
+            c.execute("SELECT id FROM accounts WHERE username = ?", (encrypted_username,))
+            if c.fetchone():
+                return jsonify({"error": "Username already exists"}), 400
+            c.execute("INSERT INTO accounts (username, password, created_at) VALUES (?, ?, ?)",
+                      (encrypted_username, encrypted_password, datetime.now()))
+            account_id = c.lastrowid
+            c.execute("DELETE FROM user_tokens WHERE account_id = ?", (account_id,))
+            c.execute("INSERT INTO api_keys (api_key, account_id, created_at) VALUES (?, ?, ?)",
+                      (api_key, account_id, datetime.now()))
+            c.execute("INSERT INTO user_tokens (account_id, token, credits, expiry) VALUES (?, ?, ?, ?)",
+                      (account_id, token, credits, datetime.now() + timedelta(minutes=expiry_minutes)))
             conn.commit()
             log_action("user created", user_data, f"api_key: {api_key[:8]}..., token: {token[:8]}...")
             return jsonify({"api_key": api_key, "token": token})
         except sqlite3.IntegrityError:
             conn.rollback()
-            return jsonify({"error": "API key already exists for this username"}), 400
+            return jsonify({"error": "API key already exists"}), 400
 
 @app.route('/decrypt', methods=['POST'])
 def decrypt_route():
@@ -141,8 +242,18 @@ def decrypt_route():
         new_token = encrypt_data(user_data)
         with get_db_connection() as conn:
             c = conn.cursor()
-            c.execute("UPDATE user_tokens SET token = ?, credits = ?, expiry = ? WHERE token = ?",
-                      (new_token, user_data["credits"], user_data["expiry"], token))
+            c.execute("""
+                SELECT ut.account_id
+                FROM user_tokens ut
+                WHERE ut.token = ?
+            """, (token,))
+            account_row = c.fetchone()
+            if not account_row:
+                return jsonify({"error": "Token not found"}), 404
+            account_id = account_row["account_id"]
+            c.execute("DELETE FROM user_tokens WHERE account_id = ?", (account_id,))
+            c.execute("INSERT INTO user_tokens (account_id, token, credits, expiry) VALUES (?, ?, ?, ?)",
+                      (account_id, new_token, user_data["credits"], user_data["expiry"]))
             conn.commit()
         log_action("accessed /decrypt", user_data, f"new_token: {new_token[:8]}...")
         return jsonify({
@@ -177,11 +288,15 @@ def delete_user():
         return jsonify({"error": "API key missing"}), 400
     with get_db_connection() as conn:
         c = conn.cursor()
-        c.execute("SELECT api_key FROM api_keys WHERE api_key = ?", (api_key,))
-        if not c.fetchone():
+        c.execute("SELECT account_id FROM api_keys WHERE api_key = ?", (api_key,))
+        account_row = c.fetchone()
+        if not account_row:
             return jsonify({"error": "Invalid API key"}), 401
-        c.execute("DELETE FROM user_tokens WHERE api_key = ?", (api_key,))
+        account_id = account_row["account_id"]
+        c.execute("DELETE FROM user_tokens WHERE account_id = ?", (account_id,))
         c.execute("DELETE FROM api_keys WHERE api_key = ?", (api_key,))
+        c.execute("DELETE FROM accounts WHERE id = ?", (account_id,))
+        c.execute("DELETE FROM sqlite_sequence WHERE name IN ('user_tokens', 'accounts')")
         conn.commit()
         log_action("user deleted via API", {"api_key": api_key[:8] + "..."})
         return jsonify({"message": "User and associated tokens deleted"}), 200
@@ -202,6 +317,9 @@ def admin_create_user():
     credits = int(data.get("credits", 10))
     expiry_minutes = int(data.get("expiry_minutes", 60))
 
+    if not username or not password:
+        return jsonify({"error": "Username and password are required"}), 400
+
     api_key = generate_api_key(username, password)
     user_data = {
         "username": username,
@@ -214,16 +332,25 @@ def admin_create_user():
     with get_db_connection() as conn:
         c = conn.cursor()
         try:
-            c.execute("INSERT INTO api_keys (api_key, username, created_at) VALUES (?, ?, ?)",
-                      (api_key, username, datetime.now()))
-            c.execute("INSERT INTO user_tokens (api_key, token, credits, expiry) VALUES (?, ?, ?, ?)",
-                      (api_key, token, credits, datetime.now() + timedelta(minutes=expiry_minutes)))
+            encrypted_username = encrypt_user_acc_data(username)
+            encrypted_password = encrypt_user_acc_data(password)
+            c.execute("SELECT id FROM accounts WHERE username = ?", (encrypted_username,))
+            if c.fetchone():
+                return jsonify({"error": "Username already exists"}), 400
+            c.execute("INSERT INTO accounts (username, password, created_at) VALUES (?, ?, ?)",
+                      (encrypted_username, encrypted_password, datetime.now()))
+            account_id = c.lastrowid
+            c.execute("DELETE FROM user_tokens WHERE account_id = ?", (account_id,))
+            c.execute("INSERT INTO api_keys (api_key, account_id, created_at) VALUES (?, ?, ?)",
+                      (api_key, account_id, datetime.now()))
+            c.execute("INSERT INTO user_tokens (account_id, token, credits, expiry) VALUES (?, ?, ?, ?)",
+                      (account_id, token, credits, datetime.now() + timedelta(minutes=expiry_minutes)))
             conn.commit()
             log_action("admin created user", user_data, f"api_key: {api_key[:8]}..., token: {token[:8]}...")
             return jsonify({"message": "User created", "api_key": api_key, "token": token})
         except sqlite3.IntegrityError:
             conn.rollback()
-            return jsonify({"error": "API key already exists for this username"}), 400
+            return jsonify({"error": "API key already exists"}), 400
 
 @app.route('/admin/refill_credits', methods=['POST'])
 def admin_refill_credits():
@@ -236,10 +363,15 @@ def admin_refill_credits():
 
     with get_db_connection() as conn:
         c = conn.cursor()
-        c.execute("SELECT token, credits, expiry FROM user_tokens WHERE api_key = ? ORDER BY id DESC LIMIT 1", (api_key,))
+        c.execute("SELECT account_id FROM api_keys WHERE api_key = ?", (api_key,))
+        account_row = c.fetchone()
+        if not account_row:
+            return jsonify({"error": "API key not found"}), 404
+        account_id = account_row["account_id"]
+        c.execute("SELECT token, credits, expiry FROM user_tokens WHERE account_id = ? ORDER BY id DESC LIMIT 1", (account_id,))
         token_data = c.fetchone()
         if not token_data:
-            return jsonify({"error": "API key not found"}), 404
+            return jsonify({"error": "No tokens found for this account"}), 404
 
         user_data = decrypt_data(token_data["token"])
         if user_data.get("deleted"):
@@ -248,8 +380,9 @@ def admin_refill_credits():
         old_credits = user_data["credits"]
         user_data["credits"] += add_credits
         new_token = encrypt_data(user_data)
-        c.execute("INSERT INTO user_tokens (api_key, token, credits, expiry) VALUES (?, ?, ?, ?)",
-                  (api_key, new_token, user_data["credits"], user_data["expiry"]))
+        c.execute("DELETE FROM user_tokens WHERE account_id = ?", (account_id,))
+        c.execute("INSERT INTO user_tokens (account_id, token, credits, expiry) VALUES (?, ?, ?, ?)",
+                  (account_id, new_token, user_data["credits"], user_data["expiry"]))
         conn.commit()
         log_action(f"credits refilled (+{add_credits}) from {old_credits} to {user_data['credits']}", user_data, f"api_key: {api_key[:8]}..., new_token: {new_token[:8]}...")
         return jsonify({"message": "Credits added", "new_token": new_token, "user_data": user_data})
@@ -265,10 +398,15 @@ def admin_extend_time():
 
     with get_db_connection() as conn:
         c = conn.cursor()
-        c.execute("SELECT token, credits, expiry FROM user_tokens WHERE api_key = ? ORDER BY id DESC LIMIT 1", (api_key,))
+        c.execute("SELECT account_id FROM api_keys WHERE api_key = ?", (api_key,))
+        account_row = c.fetchone()
+        if not account_row:
+            return jsonify({"error": "API key not found"}), 404
+        account_id = account_row["account_id"]
+        c.execute("SELECT token, credits, expiry FROM user_tokens WHERE account_id = ? ORDER BY id DESC LIMIT 1", (account_id,))
         token_data = c.fetchone()
         if not token_data:
-            return jsonify({"error": "API key not found"}), 404
+            return jsonify({"error": "No tokens found for this account"}), 404
 
         user_data = decrypt_data(token_data["token"])
         if user_data.get("deleted"):
@@ -278,8 +416,9 @@ def admin_extend_time():
         new_expiry = expiry + timedelta(minutes=add_minutes)
         user_data["expiry"] = new_expiry.isoformat()
         new_token = encrypt_data(user_data)
-        c.execute("INSERT INTO user_tokens (api_key, token, credits, expiry) VALUES (?, ?, ?, ?)",
-                  (api_key, new_token, user_data["credits"], new_expiry))
+        c.execute("DELETE FROM user_tokens WHERE account_id = ?", (account_id,))
+        c.execute("INSERT INTO user_tokens (account_id, token, credits, expiry) VALUES (?, ?, ?, ?)",
+                  (account_id, new_token, user_data["credits"], new_expiry))
         conn.commit()
         log_action(f"expiry extended (+{add_minutes} mins)", user_data, f"api_key: {api_key[:8]}..., new_token: {new_token[:8]}...")
         return jsonify({"message": "Time extended", "new_token": new_token, "user_data": user_data})
@@ -295,15 +434,24 @@ def admin_dashboard():
         with get_db_connection() as conn:
             c = conn.cursor()
             c.execute("""
-                SELECT ak.api_key, ak.username, ut.credits, ut.expiry, ut.token
+                SELECT 
+                    ak.api_key, 
+                    ak.account_id, 
+                    a.username,
+                    ut.credits, 
+                    ut.expiry, 
+                    ut.token
                 FROM api_keys ak
-                JOIN user_tokens ut ON ak.api_key = ut.api_key
-                WHERE ut.id = (SELECT MAX(id) FROM user_tokens WHERE api_key = ak.api_key)
+                JOIN accounts a ON ak.account_id = a.id
+                JOIN user_tokens ut ON ak.account_id = ut.account_id
+                WHERE ut.id = (
+                    SELECT MAX(id) FROM user_tokens WHERE account_id = ak.account_id
+                )
             """)
             active_api_keys = [
                 {
                     "api_key": row["api_key"],
-                    "username": row["username"],
+                    "username": decrypt_user_acc_data(row["username"]),
                     "credits": row["credits"],
                     "expiry": row["expiry"],
                     "token": row["token"]
@@ -322,6 +470,10 @@ def create_user_form():
     credits = int(request.form.get('credits', 10))
     expiry_minutes = int(request.form.get('expiry_minutes', 60))
 
+    if not username or not password:
+        flash("Username and password are required.", "danger")
+        return redirect(url_for('admin_dashboard'))
+
     api_key = generate_api_key(username, password)
     user_data = {
         "username": username,
@@ -334,17 +486,27 @@ def create_user_form():
     with get_db_connection() as conn:
         c = conn.cursor()
         try:
-            c.execute("INSERT INTO api_keys (api_key, username, created_at) VALUES (?, ?, ?)",
-                      (api_key, username, datetime.now()))
-            c.execute("INSERT INTO user_tokens (api_key, token, credits, expiry) VALUES (?, ?, ?, ?)",
-                      (api_key, token, credits, datetime.now() + timedelta(minutes=expiry_minutes)))
+            encrypted_username = encrypt_user_acc_data(username)
+            encrypted_password = encrypt_user_acc_data(password)
+            c.execute("SELECT id FROM accounts WHERE username = ?", (encrypted_username,))
+            if c.fetchone():
+                flash("Error: Username already exists.", "danger")
+                return redirect(url_for('admin_dashboard'))
+            c.execute("INSERT INTO accounts (username, password, created_at) VALUES (?, ?, ?)",
+                      (encrypted_username, encrypted_password, datetime.now()))
+            account_id = c.lastrowid
+            c.execute("DELETE FROM user_tokens WHERE account_id = ?", (account_id,))
+            c.execute("INSERT INTO api_keys (api_key, account_id, created_at) VALUES (?, ?, ?)",
+                      (api_key, account_id, datetime.now()))
+            c.execute("INSERT INTO user_tokens (account_id, token, credits, expiry) VALUES (?, ?, ?, ?)",
+                      (account_id, token, credits, datetime.now() + timedelta(minutes=expiry_minutes)))
             conn.commit()
             log_action("admin created user via form", user_data, f"api_key: {api_key[:8]}..., token: {token[:8]}...")
             flash(f"User created! API key: {api_key[:8]}... Copy the API key and token from the 'New API Key' section below.", "success")
             return redirect(url_for('admin_dashboard', new_api_key=api_key, new_token=token))
         except sqlite3.IntegrityError:
             conn.rollback()
-            flash("Error: API key already exists for this username.", "danger")
+            flash("Error: API key already exists.", "danger")
             return redirect(url_for('admin_dashboard'))
 
 @app.route('/admin/refill_credits_form', methods=['POST'])
@@ -359,10 +521,16 @@ def refill_credits_form():
 
     with get_db_connection() as conn:
         c = conn.cursor()
-        c.execute("SELECT token, credits, expiry FROM user_tokens WHERE api_key = ? ORDER BY id DESC LIMIT 1", (api_key,))
+        c.execute("SELECT account_id FROM api_keys WHERE api_key = ?", (api_key,))
+        account_row = c.fetchone()
+        if not account_row:
+            flash("API key not found.", "danger")
+            return redirect(url_for('admin_dashboard'))
+        account_id = account_row["account_id"]
+        c.execute("SELECT token, credits, expiry FROM user_tokens WHERE account_id = ? ORDER BY id DESC LIMIT 1", (account_id,))
         token_data = c.fetchone()
         if not token_data:
-            flash("API key not found.", "danger")
+            flash("No tokens found for this account.", "danger")
             return redirect(url_for('admin_dashboard'))
 
         user_data = decrypt_data(token_data["token"])
@@ -373,8 +541,9 @@ def refill_credits_form():
         old_credits = user_data["credits"]
         user_data["credits"] += add_credits
         new_token = encrypt_data(user_data)
-        c.execute("INSERT INTO user_tokens (api_key, token, credits, expiry) VALUES (?, ?, ?, ?)",
-                  (api_key, new_token, user_data["credits"], user_data["expiry"]))
+        c.execute("DELETE FROM user_tokens WHERE account_id = ?", (account_id,))
+        c.execute("INSERT INTO user_tokens (account_id, token, credits, expiry) VALUES (?, ?, ?, ?)",
+                  (account_id, new_token, user_data["credits"], user_data["expiry"]))
         conn.commit()
         log_action(f"credits refilled via form (+{add_credits}) from {old_credits} to {user_data['credits']}", user_data, f"api_key: {api_key[:8]}..., new_token: {new_token[:8]}...")
         flash(f"Credits added! New credits: {user_data['credits']}. Copy the new token from the 'New API Key' section below.", "success")
@@ -392,10 +561,16 @@ def extend_time_form():
 
     with get_db_connection() as conn:
         c = conn.cursor()
-        c.execute("SELECT token, credits, expiry FROM user_tokens WHERE api_key = ? ORDER BY id DESC LIMIT 1", (api_key,))
+        c.execute("SELECT account_id FROM api_keys WHERE api_key = ?", (api_key,))
+        account_row = c.fetchone()
+        if not account_row:
+            flash("API key not found.", "danger")
+            return redirect(url_for('admin_dashboard'))
+        account_id = account_row["account_id"]
+        c.execute("SELECT token, credits, expiry FROM user_tokens WHERE account_id = ? ORDER BY id DESC LIMIT 1", (account_id,))
         token_data = c.fetchone()
         if not token_data:
-            flash("API key not found.", "danger")
+            flash("No tokens found for this account.", "danger")
             return redirect(url_for('admin_dashboard'))
 
         user_data = decrypt_data(token_data["token"])
@@ -407,8 +582,9 @@ def extend_time_form():
         new_expiry = expiry + timedelta(minutes=add_minutes)
         user_data["expiry"] = new_expiry.isoformat()
         new_token = encrypt_data(user_data)
-        c.execute("INSERT INTO user_tokens (api_key, token, credits, expiry) VALUES (?, ?, ?, ?)",
-                  (api_key, new_token, user_data["credits"], new_expiry))
+        c.execute("DELETE FROM user_tokens WHERE account_id = ?", (account_id,))
+        c.execute("INSERT INTO user_tokens (account_id, token, credits, expiry) VALUES (?, ?, ?, ?)",
+                  (account_id, new_token, user_data["credits"], new_expiry))
         conn.commit()
         log_action(f"expiry extended via form (+{add_minutes} mins)", user_data, f"api_key: {api_key[:8]}..., new_token: {new_token[:8]}...")
         flash(f"Time extended! Copy the new token from the 'New API Key' section below.", "success")
@@ -420,10 +596,16 @@ def check_user_status_form():
     api_key = request.form.get('api_key')
     with get_db_connection() as conn:
         c = conn.cursor()
-        c.execute("SELECT token, credits, expiry FROM user_tokens WHERE api_key = ? ORDER BY id DESC LIMIT 1", (api_key,))
+        c.execute("SELECT account_id FROM api_keys WHERE api_key = ?", (api_key,))
+        account_row = c.fetchone()
+        if not account_row:
+            flash("API key not found.", "danger")
+            return redirect(url_for('admin_dashboard'))
+        account_id = account_row["account_id"]
+        c.execute("SELECT token, credits, expiry FROM user_tokens WHERE account_id = ? ORDER BY id DESC LIMIT 1", (account_id,))
         token_data = c.fetchone()
         if not token_data:
-            flash("API key not found.", "danger")
+            flash("No tokens found for this account.", "danger")
             return redirect(url_for('admin_dashboard'))
 
         user_data = decrypt_data(token_data["token"])
@@ -449,12 +631,16 @@ def delete_user_form():
     api_key = request.form.get('api_key')
     with get_db_connection() as conn:
         c = conn.cursor()
-        c.execute("SELECT api_key FROM api_keys WHERE api_key = ?", (api_key,))
-        if not c.fetchone():
+        c.execute("SELECT account_id FROM api_keys WHERE api_key = ?", (api_key,))
+        account_row = c.fetchone()
+        if not account_row:
             flash("API key not found.", "danger")
             return redirect(url_for('admin_dashboard'))
-        c.execute("DELETE FROM user_tokens WHERE api_key = ?", (api_key,))
+        account_id = account_row["account_id"]
+        c.execute("DELETE FROM user_tokens WHERE account_id = ?", (account_id,))
         c.execute("DELETE FROM api_keys WHERE api_key = ?", (api_key,))
+        c.execute("DELETE FROM accounts WHERE id = ?", (account_id,))
+        c.execute("DELETE FROM sqlite_sequence WHERE name IN ('user_tokens', 'accounts')")
         conn.commit()
         log_action("user deleted via admin form", {"api_key": api_key[:8] + "..."})
         flash("User and associated tokens deleted successfully.", "success")

@@ -39,3 +39,18 @@ def decrypt_data(token: str) -> dict:
         return json.loads(decrypted.decode())
     except Exception as e:
         raise Exception(f"Decryption failed: {str(e)}")
+
+def encrypt_user_acc_data(data: str) -> str:
+    """Encrypt username or password for accounts table."""
+    if not isinstance(data, str) or not data:
+        raise ValueError("Data must be a non-empty string")
+    encrypted = cipher.encrypt(data.encode('utf-8'))
+    return encrypted.decode('utf-8')
+
+def decrypt_user_acc_data(encrypted_data: str) -> str:
+    """Decrypt username or password from accounts table."""
+    try:
+        decrypted = cipher.decrypt(encrypted_data.encode('utf-8'))
+        return decrypted.decode('utf-8')
+    except Exception as e:
+        raise Exception(f"Decryption failed: {str(e)}")
