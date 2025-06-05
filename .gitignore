@@ -8,3 +8,4 @@ user_act*
 .env
 users.db
 *.key
+*.log
