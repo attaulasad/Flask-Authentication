@@ -1,0 +1,360 @@
+2025-06-01 21:42:38,504 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-06-01 21:42:38,504 - INFO - [33mPress CTRL+C to quit[0m
+2025-06-01 21:42:56,252 - INFO - 127.0.0.1 - - [01/Jun/2025 21:42:56] "[32mGET /admin HTTP/1.1[0m" 302 -
+2025-06-01 21:42:56,261 - INFO - 127.0.0.1 - - [01/Jun/2025 21:42:56] "GET /login HTTP/1.1" 200 -
+2025-06-01 21:42:58,942 - INFO - 127.0.0.1 - - [01/Jun/2025 21:42:58] "GET /login HTTP/1.1" 200 -
+2025-06-01 21:43:02,716 - INFO - 127.0.0.1 - - [01/Jun/2025 21:43:02] "[32mPOST /login HTTP/1.1[0m" 302 -
+2025-06-01 21:43:02,724 - INFO - 127.0.0.1 - - [01/Jun/2025 21:43:02] "[32mGET /admin HTTP/1.1[0m" 302 -
+2025-06-01 21:43:02,730 - INFO - 127.0.0.1 - - [01/Jun/2025 21:43:02] "GET /login HTTP/1.1" 200 -
+2025-06-01 21:49:24,962 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-06-01 21:49:24,962 - INFO - [33mPress CTRL+C to quit[0m
+2025-06-01 21:49:41,255 - INFO - 127.0.0.1 - - [01/Jun/2025 21:49:41] "GET /login HTTP/1.1" 200 -
+2025-06-01 21:49:45,987 - INFO - 127.0.0.1 - - [01/Jun/2025 21:49:45] "[32mPOST /login HTTP/1.1[0m" 302 -
+2025-06-01 21:49:46,043 - INFO - 127.0.0.1 - - [01/Jun/2025 21:49:46] "GET /admin HTTP/1.1" 200 -
+2025-06-01 21:49:54,854 - INFO - encrypted data - {'username': 'admin', 'credits': 10, 'expiry': '2025-06-01T22:49:54.850848', 'deleted': False} - token: gAAAAABo...
+2025-06-01 21:49:54,855 - DEBUG - encrypted data - {'username': 'admin', 'credits': 10, 'expiry': '2025-06-01T22:49:54.850848', 'deleted': False} - token: gAAAAABo...
+2025-06-01 21:49:54,874 - INFO - admin created user via form - {'username': 'admin', 'credits': 10, 'expiry': '2025-06-01T22:49:54.850848', 'deleted': False} - token: gAAAAABo...
+2025-06-01 21:49:54,874 - DEBUG - admin created user via form - {'username': 'admin', 'credits': 10, 'expiry': '2025-06-01T22:49:54.850848', 'deleted': False} - token: gAAAAABo...
+2025-06-01 21:49:54,875 - INFO - 127.0.0.1 - - [01/Jun/2025 21:49:54] "[32mPOST /admin/create_user_form HTTP/1.1[0m" 302 -
+2025-06-01 21:49:54,897 - INFO - 127.0.0.1 - - [01/Jun/2025 21:49:54] "GET /admin HTTP/1.1" 200 -
+2025-06-01 21:49:59,576 - INFO - api_key generated - {'username': 'admin'} - api_key: cd938f73...
+2025-06-01 21:49:59,576 - DEBUG - api_key generated - {'username': 'admin'} - api_key: cd938f73...
+2025-06-01 21:49:59,576 - INFO - 127.0.0.1 - - [01/Jun/2025 21:49:59] "[32mPOST /admin/generate_api_key_form HTTP/1.1[0m" 302 -
+2025-06-01 21:49:59,591 - INFO - 127.0.0.1 - - [01/Jun/2025 21:49:59] "GET /admin HTTP/1.1" 200 -
+2025-06-01 21:50:14,967 - INFO - 127.0.0.1 - - [01/Jun/2025 21:50:14] "[32mPOST /admin/check_user_status_form HTTP/1.1[0m" 302 -
+2025-06-01 21:50:14,976 - INFO - 127.0.0.1 - - [01/Jun/2025 21:50:14] "GET /admin HTTP/1.1" 200 -
+2025-06-01 21:50:20,346 - INFO - encrypted data - {'username': 'admin', 'credits': 20, 'expiry': '2025-06-01T22:49:54.850848', 'deleted': False} - token: gAAAAABo...
+2025-06-01 21:50:20,346 - DEBUG - encrypted data - {'username': 'admin', 'credits': 20, 'expiry': '2025-06-01T22:49:54.850848', 'deleted': False} - token: gAAAAABo...
+2025-06-01 21:50:20,352 - INFO - credits refilled via form (+10) from 10 to 20 - {'username': 'admin', 'credits': 20, 'expiry': '2025-06-01T22:49:54.850848', 'deleted': False} - new_token: gAAAAABo...
+2025-06-01 21:50:20,353 - DEBUG - credits refilled via form (+10) from 10 to 20 - {'username': 'admin', 'credits': 20, 'expiry': '2025-06-01T22:49:54.850848', 'deleted': False} - new_token: gAAAAABo...
+2025-06-01 21:50:20,354 - INFO - 127.0.0.1 - - [01/Jun/2025 21:50:20] "[32mPOST /admin/refill_credits_form HTTP/1.1[0m" 302 -
+2025-06-01 21:50:20,372 - INFO - 127.0.0.1 - - [01/Jun/2025 21:50:20] "GET /admin HTTP/1.1" 200 -
+2025-06-01 21:50:24,129 - INFO - 127.0.0.1 - - [01/Jun/2025 21:50:24] "[32mPOST /admin/check_user_status_form HTTP/1.1[0m" 302 -
+2025-06-01 21:50:24,137 - INFO - 127.0.0.1 - - [01/Jun/2025 21:50:24] "GET /admin HTTP/1.1" 200 -
+2025-06-01 21:50:30,187 - INFO - api_key deleted via admin form - {'username': 'admin', 'api_key': 'cd938f73...'}
+2025-06-01 21:50:30,188 - DEBUG - api_key deleted via admin form - {'username': 'admin', 'api_key': 'cd938f73...'}
+2025-06-01 21:50:30,189 - INFO - 127.0.0.1 - - [01/Jun/2025 21:50:30] "[32mPOST /admin/delete_api_key_form HTTP/1.1[0m" 302 -
+2025-06-01 21:50:30,203 - INFO - 127.0.0.1 - - [01/Jun/2025 21:50:30] "GET /admin HTTP/1.1" 200 -
+2025-06-01 21:50:34,608 - INFO - user deleted via admin form - {'username': 'admin'}
+2025-06-01 21:50:34,608 - DEBUG - user deleted via admin form - {'username': 'admin'}
+2025-06-01 21:50:34,611 - INFO - 127.0.0.1 - - [01/Jun/2025 21:50:34] "[32mPOST /admin/delete_user_form HTTP/1.1[0m" 302 -
+2025-06-01 21:50:34,623 - INFO - 127.0.0.1 - - [01/Jun/2025 21:50:34] "GET /admin HTTP/1.1" 200 -
+2025-06-01 21:51:17,722 - INFO - encrypted data - {'username': 'admin', 'credits': 10, 'expiry': '2025-06-01T22:51:17.722574', 'deleted': False} - token: gAAAAABo...
+2025-06-01 21:51:17,723 - DEBUG - encrypted data - {'username': 'admin', 'credits': 10, 'expiry': '2025-06-01T22:51:17.722574', 'deleted': False} - token: gAAAAABo...
+2025-06-01 21:51:17,730 - INFO - admin created user via form - {'username': 'admin', 'credits': 10, 'expiry': '2025-06-01T22:51:17.722574', 'deleted': False} - token: gAAAAABo...
+2025-06-01 21:51:17,731 - DEBUG - admin created user via form - {'username': 'admin', 'credits': 10, 'expiry': '2025-06-01T22:51:17.722574', 'deleted': False} - token: gAAAAABo...
+2025-06-01 21:51:17,732 - INFO - 127.0.0.1 - - [01/Jun/2025 21:51:17] "[32mPOST /admin/create_user_form HTTP/1.1[0m" 302 -
+2025-06-01 21:51:17,745 - INFO - 127.0.0.1 - - [01/Jun/2025 21:51:17] "GET /admin HTTP/1.1" 200 -
+2025-06-01 21:51:20,573 - INFO - api_key generated - {'username': 'admin'} - api_key: cd938f73...
+2025-06-01 21:51:20,573 - DEBUG - api_key generated - {'username': 'admin'} - api_key: cd938f73...
+2025-06-01 21:51:20,576 - INFO - 127.0.0.1 - - [01/Jun/2025 21:51:20] "[32mPOST /admin/generate_api_key_form HTTP/1.1[0m" 302 -
+2025-06-01 21:51:20,585 - INFO - 127.0.0.1 - - [01/Jun/2025 21:51:20] "GET /admin HTTP/1.1" 200 -
+2025-06-01 21:52:30,973 - INFO - api_key deleted via admin form - {'username': 'admin', 'api_key': 'cd938f73...'}
+2025-06-01 21:52:30,973 - DEBUG - api_key deleted via admin form - {'username': 'admin', 'api_key': 'cd938f73...'}
+2025-06-01 21:52:30,974 - INFO - 127.0.0.1 - - [01/Jun/2025 21:52:30] "[32mPOST /admin/delete_api_key_form HTTP/1.1[0m" 302 -
+2025-06-01 21:52:30,989 - INFO - 127.0.0.1 - - [01/Jun/2025 21:52:30] "GET /admin HTTP/1.1" 200 -
+2025-06-01 21:55:10,393 - INFO - api_key generated - {'username': 'admin'} - api_key: cd938f73...
+2025-06-01 21:55:10,394 - DEBUG - api_key generated - {'username': 'admin'} - api_key: cd938f73...
+2025-06-01 21:55:10,394 - INFO - 127.0.0.1 - - [01/Jun/2025 21:55:10] "[32mPOST /admin/generate_api_key_form HTTP/1.1[0m" 302 -
+2025-06-01 21:55:10,408 - INFO - 127.0.0.1 - - [01/Jun/2025 21:55:10] "GET /admin HTTP/1.1" 200 -
+2025-06-01 21:55:15,535 - INFO - 127.0.0.1 - - [01/Jun/2025 21:55:15] "[32mPOST /admin/generate_api_key_form HTTP/1.1[0m" 302 -
+2025-06-01 21:55:15,551 - INFO - 127.0.0.1 - - [01/Jun/2025 21:55:15] "GET /admin HTTP/1.1" 200 -
+2025-06-01 21:55:22,057 - INFO - user deleted via admin form - {'username': 'admin'}
+2025-06-01 21:55:22,057 - DEBUG - user deleted via admin form - {'username': 'admin'}
+2025-06-01 21:55:22,058 - INFO - 127.0.0.1 - - [01/Jun/2025 21:55:22] "[32mPOST /admin/delete_user_form HTTP/1.1[0m" 302 -
+2025-06-01 21:55:22,073 - INFO - 127.0.0.1 - - [01/Jun/2025 21:55:22] "GET /admin HTTP/1.1" 200 -
+2025-06-01 22:05:53,614 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-06-01 22:05:53,614 - INFO - [33mPress CTRL+C to quit[0m
+2025-06-01 22:05:57,822 - INFO - 127.0.0.1 - - [01/Jun/2025 22:05:57] "[32mGET /logout HTTP/1.1[0m" 302 -
+2025-06-01 22:05:57,871 - INFO - 127.0.0.1 - - [01/Jun/2025 22:05:57] "GET /login HTTP/1.1" 200 -
+2025-06-01 22:06:01,922 - INFO - 127.0.0.1 - - [01/Jun/2025 22:06:01] "[32mPOST /login HTTP/1.1[0m" 302 -
+2025-06-01 22:06:01,996 - INFO - 127.0.0.1 - - [01/Jun/2025 22:06:01] "GET /admin HTTP/1.1" 200 -
+2025-06-01 22:06:07,888 - INFO - encrypted data - {'username': 'asad', 'credits': 10, 'expiry': '2025-06-01T23:06:07.884667', 'deleted': False} - token: gAAAAABo...
+2025-06-01 22:06:07,888 - DEBUG - encrypted data - {'username': 'asad', 'credits': 10, 'expiry': '2025-06-01T23:06:07.884667', 'deleted': False} - token: gAAAAABo...
+2025-06-01 22:06:07,906 - INFO - admin created user via form - {'username': 'asad', 'credits': 10, 'expiry': '2025-06-01T23:06:07.884667', 'deleted': False} - token: gAAAAABo...
+2025-06-01 22:06:07,906 - DEBUG - admin created user via form - {'username': 'asad', 'credits': 10, 'expiry': '2025-06-01T23:06:07.884667', 'deleted': False} - token: gAAAAABo...
+2025-06-01 22:06:07,907 - INFO - 127.0.0.1 - - [01/Jun/2025 22:06:07] "[32mPOST /admin/create_user_form HTTP/1.1[0m" 302 -
+2025-06-01 22:06:07,939 - INFO - 127.0.0.1 - - [01/Jun/2025 22:06:07] "GET /admin HTTP/1.1" 200 -
+2025-06-01 22:06:12,968 - INFO - all users deleted via admin form - {'action': 'delete_all'}
+2025-06-01 22:06:12,968 - DEBUG - all users deleted via admin form - {'action': 'delete_all'}
+2025-06-01 22:06:12,969 - INFO - 127.0.0.1 - - [01/Jun/2025 22:06:12] "[32mPOST /admin/delete_user_form HTTP/1.1[0m" 302 -
+2025-06-01 22:06:12,980 - INFO - 127.0.0.1 - - [01/Jun/2025 22:06:12] "GET /admin HTTP/1.1" 200 -
+2025-06-01 22:06:22,552 - INFO - encrypted data - {'username': 'asad', 'credits': 10, 'expiry': '2025-06-01T23:06:22.552205', 'deleted': False} - token: gAAAAABo...
+2025-06-01 22:06:22,552 - DEBUG - encrypted data - {'username': 'asad', 'credits': 10, 'expiry': '2025-06-01T23:06:22.552205', 'deleted': False} - token: gAAAAABo...
+2025-06-01 22:06:22,563 - INFO - admin created user via form - {'username': 'asad', 'credits': 10, 'expiry': '2025-06-01T23:06:22.552205', 'deleted': False} - token: gAAAAABo...
+2025-06-01 22:06:22,563 - DEBUG - admin created user via form - {'username': 'asad', 'credits': 10, 'expiry': '2025-06-01T23:06:22.552205', 'deleted': False} - token: gAAAAABo...
+2025-06-01 22:06:22,564 - INFO - 127.0.0.1 - - [01/Jun/2025 22:06:22] "[32mPOST /admin/create_user_form HTTP/1.1[0m" 302 -
+2025-06-01 22:06:22,578 - INFO - 127.0.0.1 - - [01/Jun/2025 22:06:22] "GET /admin HTTP/1.1" 200 -
+2025-06-01 22:06:26,252 - INFO - api_key generated - {'username': 'asad'} - api_key: 0ebb39a6...
+2025-06-01 22:06:26,252 - DEBUG - api_key generated - {'username': 'asad'} - api_key: 0ebb39a6...
+2025-06-01 22:06:26,253 - INFO - 127.0.0.1 - - [01/Jun/2025 22:06:26] "[32mPOST /admin/generate_api_key_form HTTP/1.1[0m" 302 -
+2025-06-01 22:06:26,270 - INFO - 127.0.0.1 - - [01/Jun/2025 22:06:26] "GET /admin HTTP/1.1" 200 -
+2025-06-01 22:06:30,065 - INFO - api_key deleted via admin form - {'username': 'asad', 'api_key': '0ebb39a6...'}
+2025-06-01 22:06:30,065 - DEBUG - api_key deleted via admin form - {'username': 'asad', 'api_key': '0ebb39a6...'}
+2025-06-01 22:06:30,068 - INFO - 127.0.0.1 - - [01/Jun/2025 22:06:30] "[32mPOST /admin/delete_api_key_form HTTP/1.1[0m" 302 -
+2025-06-01 22:06:30,080 - INFO - 127.0.0.1 - - [01/Jun/2025 22:06:30] "GET /admin HTTP/1.1" 200 -
+2025-06-01 22:06:35,826 - ERROR - Exception on /admin/delete_api_key_form [POST]
+Traceback (most recent call last):
+  File "C:\Users\Atta Ul Asad\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\Atta Ul Asad\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\Atta Ul Asad\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\Atta Ul Asad\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\Atta Ul Asad\Desktop\Hammad\flask api auth\app.py", line 95, in decorated_function
+    return f(*args, **kwargs)
+  File "C:\Users\Atta Ul Asad\Desktop\Hammad\flask api auth\app.py", line 635, in delete_api_key_form
+    api_key_id = int(request.form.get('api_key_id', 0))
+ValueError: invalid literal for int() with base 10: 'None'
+2025-06-01 22:06:35,873 - INFO - 127.0.0.1 - - [01/Jun/2025 22:06:35] "[35m[1mPOST /admin/delete_api_key_form HTTP/1.1[0m" 500 -
+2025-06-01 22:06:41,045 - ERROR - Exception on /admin/delete_api_key_form [POST]
+Traceback (most recent call last):
+  File "C:\Users\Atta Ul Asad\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\Atta Ul Asad\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\Atta Ul Asad\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\Atta Ul Asad\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\Atta Ul Asad\Desktop\Hammad\flask api auth\app.py", line 95, in decorated_function
+    return f(*args, **kwargs)
+  File "C:\Users\Atta Ul Asad\Desktop\Hammad\flask api auth\app.py", line 635, in delete_api_key_form
+    api_key_id = int(request.form.get('api_key_id', 0))
+ValueError: invalid literal for int() with base 10: 'None'
+2025-06-01 22:06:41,048 - INFO - 127.0.0.1 - - [01/Jun/2025 22:06:41] "[35m[1mPOST /admin/delete_api_key_form HTTP/1.1[0m" 500 -
+2025-06-01 22:06:44,026 - ERROR - Exception on /admin/delete_api_key_form [POST]
+Traceback (most recent call last):
+  File "C:\Users\Atta Ul Asad\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\Atta Ul Asad\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\Atta Ul Asad\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\Atta Ul Asad\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\Atta Ul Asad\Desktop\Hammad\flask api auth\app.py", line 95, in decorated_function
+    return f(*args, **kwargs)
+  File "C:\Users\Atta Ul Asad\Desktop\Hammad\flask api auth\app.py", line 635, in delete_api_key_form
+    api_key_id = int(request.form.get('api_key_id', 0))
+ValueError: invalid literal for int() with base 10: 'None'
+2025-06-01 22:06:44,028 - INFO - 127.0.0.1 - - [01/Jun/2025 22:06:44] "[35m[1mPOST /admin/delete_api_key_form HTTP/1.1[0m" 500 -
+2025-06-01 22:06:56,069 - ERROR - Exception on /admin/delete_api_key_form [POST]
+Traceback (most recent call last):
+  File "C:\Users\Atta Ul Asad\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\Atta Ul Asad\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\Atta Ul Asad\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\Atta Ul Asad\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\Atta Ul Asad\Desktop\Hammad\flask api auth\app.py", line 95, in decorated_function
+    return f(*args, **kwargs)
+  File "C:\Users\Atta Ul Asad\Desktop\Hammad\flask api auth\app.py", line 635, in delete_api_key_form
+    api_key_id = int(request.form.get('api_key_id', 0))
+ValueError: invalid literal for int() with base 10: 'None'
+2025-06-01 22:06:56,072 - INFO - 127.0.0.1 - - [01/Jun/2025 22:06:56] "[35m[1mPOST /admin/delete_api_key_form HTTP/1.1[0m" 500 -
+2025-06-01 22:07:09,065 - INFO - 127.0.0.1 - - [01/Jun/2025 22:07:09] "GET /admin HTTP/1.1" 200 -
+2025-06-01 22:07:19,468 - ERROR - Exception on /admin/delete_api_key_form [POST]
+Traceback (most recent call last):
+  File "C:\Users\Atta Ul Asad\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\Atta Ul Asad\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\Atta Ul Asad\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\Atta Ul Asad\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\Atta Ul Asad\Desktop\Hammad\flask api auth\app.py", line 95, in decorated_function
+    return f(*args, **kwargs)
+  File "C:\Users\Atta Ul Asad\Desktop\Hammad\flask api auth\app.py", line 635, in delete_api_key_form
+    api_key_id = int(request.form.get('api_key_id', 0))
+ValueError: invalid literal for int() with base 10: 'None'
+2025-06-01 22:07:19,473 - INFO - 127.0.0.1 - - [01/Jun/2025 22:07:19] "[35m[1mPOST /admin/delete_api_key_form HTTP/1.1[0m" 500 -
+2025-06-01 22:08:00,856 - INFO - user deleted via admin form - {'username': 'asad'}
+2025-06-01 22:08:00,857 - DEBUG - user deleted via admin form - {'username': 'asad'}
+2025-06-01 22:08:00,858 - INFO - 127.0.0.1 - - [01/Jun/2025 22:08:00] "[32mPOST /admin/delete_user_form HTTP/1.1[0m" 302 -
+2025-06-01 22:08:00,873 - INFO - 127.0.0.1 - - [01/Jun/2025 22:08:00] "GET /admin HTTP/1.1" 200 -
+2025-06-01 22:08:05,722 - INFO - encrypted data - {'username': 'asad', 'credits': 10, 'expiry': '2025-06-01T23:08:05.722402', 'deleted': False} - token: gAAAAABo...
+2025-06-01 22:08:05,723 - DEBUG - encrypted data - {'username': 'asad', 'credits': 10, 'expiry': '2025-06-01T23:08:05.722402', 'deleted': False} - token: gAAAAABo...
+2025-06-01 22:08:05,734 - INFO - admin created user via form - {'username': 'asad', 'credits': 10, 'expiry': '2025-06-01T23:08:05.722402', 'deleted': False} - token: gAAAAABo...
+2025-06-01 22:08:05,735 - DEBUG - admin created user via form - {'username': 'asad', 'credits': 10, 'expiry': '2025-06-01T23:08:05.722402', 'deleted': False} - token: gAAAAABo...
+2025-06-01 22:08:05,736 - INFO - 127.0.0.1 - - [01/Jun/2025 22:08:05] "[32mPOST /admin/create_user_form HTTP/1.1[0m" 302 -
+2025-06-01 22:08:05,746 - INFO - 127.0.0.1 - - [01/Jun/2025 22:08:05] "GET /admin HTTP/1.1" 200 -
+2025-06-01 22:08:12,313 - INFO - api_key generated - {'username': 'asad'} - api_key: 0ebb39a6...
+2025-06-01 22:08:12,313 - DEBUG - api_key generated - {'username': 'asad'} - api_key: 0ebb39a6...
+2025-06-01 22:08:12,314 - INFO - 127.0.0.1 - - [01/Jun/2025 22:08:12] "[32mPOST /admin/generate_api_key_form HTTP/1.1[0m" 302 -
+2025-06-01 22:08:12,327 - INFO - 127.0.0.1 - - [01/Jun/2025 22:08:12] "GET /admin HTTP/1.1" 200 -
+2025-06-01 22:08:16,599 - INFO - api_key deleted via admin form - {'username': 'asad', 'api_key': '0ebb39a6...'}
+2025-06-01 22:08:16,599 - DEBUG - api_key deleted via admin form - {'username': 'asad', 'api_key': '0ebb39a6...'}
+2025-06-01 22:08:16,603 - INFO - 127.0.0.1 - - [01/Jun/2025 22:08:16] "[32mPOST /admin/delete_api_key_form HTTP/1.1[0m" 302 -
+2025-06-01 22:08:16,613 - INFO - 127.0.0.1 - - [01/Jun/2025 22:08:16] "GET /admin HTTP/1.1" 200 -
+2025-06-01 22:08:22,772 - INFO - user deleted via admin form - {'username': 'asad'}
+2025-06-01 22:08:22,772 - DEBUG - user deleted via admin form - {'username': 'asad'}
+2025-06-01 22:08:22,773 - INFO - 127.0.0.1 - - [01/Jun/2025 22:08:22] "[32mPOST /admin/delete_user_form HTTP/1.1[0m" 302 -
+2025-06-01 22:08:22,787 - INFO - 127.0.0.1 - - [01/Jun/2025 22:08:22] "GET /admin HTTP/1.1" 200 -
+2025-06-01 22:11:33,855 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-06-01 22:11:33,855 - INFO - [33mPress CTRL+C to quit[0m
+2025-06-01 22:11:39,141 - INFO - 127.0.0.1 - - [01/Jun/2025 22:11:39] "[32mGET /logout HTTP/1.1[0m" 302 -
+2025-06-01 22:11:39,160 - INFO - 127.0.0.1 - - [01/Jun/2025 22:11:39] "GET /login HTTP/1.1" 200 -
+2025-06-01 22:11:43,202 - INFO - 127.0.0.1 - - [01/Jun/2025 22:11:43] "[32mPOST /login HTTP/1.1[0m" 302 -
+2025-06-01 22:11:43,227 - INFO - 127.0.0.1 - - [01/Jun/2025 22:11:43] "GET /admin HTTP/1.1" 200 -
+2025-06-01 22:11:48,304 - INFO - encrypted data - {'username': 'asad', 'credits': 10, 'expiry': '2025-06-01T23:11:48.301268', 'deleted': False} - token: gAAAAABo...
+2025-06-01 22:11:48,305 - DEBUG - encrypted data - {'username': 'asad', 'credits': 10, 'expiry': '2025-06-01T23:11:48.301268', 'deleted': False} - token: gAAAAABo...
+2025-06-01 22:11:48,317 - INFO - admin created user via form - {'username': 'asad', 'credits': 10, 'expiry': '2025-06-01T23:11:48.301268', 'deleted': False} - token: gAAAAABo...
+2025-06-01 22:11:48,318 - DEBUG - admin created user via form - {'username': 'asad', 'credits': 10, 'expiry': '2025-06-01T23:11:48.301268', 'deleted': False} - token: gAAAAABo...
+2025-06-01 22:11:48,319 - INFO - 127.0.0.1 - - [01/Jun/2025 22:11:48] "[32mPOST /admin/create_user_form HTTP/1.1[0m" 302 -
+2025-06-01 22:11:48,327 - INFO - 127.0.0.1 - - [01/Jun/2025 22:11:48] "GET /admin HTTP/1.1" 200 -
+2025-06-01 22:11:50,606 - INFO - api_key generated - {'username': 'asad'} - api_key: 0ebb39a6...
+2025-06-01 22:11:50,606 - DEBUG - api_key generated - {'username': 'asad'} - api_key: 0ebb39a6...
+2025-06-01 22:11:50,607 - INFO - 127.0.0.1 - - [01/Jun/2025 22:11:50] "[32mPOST /admin/generate_api_key_form HTTP/1.1[0m" 302 -
+2025-06-01 22:11:50,619 - INFO - 127.0.0.1 - - [01/Jun/2025 22:11:50] "GET /admin HTTP/1.1" 200 -
+2025-06-01 22:11:54,535 - INFO - api_key and token deleted via admin form - {'username': 'asad', 'api_key': '0ebb39a6...'}
+2025-06-01 22:11:54,536 - DEBUG - api_key and token deleted via admin form - {'username': 'asad', 'api_key': '0ebb39a6...'}
+2025-06-01 22:11:54,537 - INFO - 127.0.0.1 - - [01/Jun/2025 22:11:54] "[32mPOST /admin/delete_api_key_form HTTP/1.1[0m" 302 -
+2025-06-01 22:11:54,547 - INFO - 127.0.0.1 - - [01/Jun/2025 22:11:54] "GET /admin HTTP/1.1" 200 -
+2025-06-01 22:12:06,070 - INFO - user deleted via admin form - {'username': 'asad'}
+2025-06-01 22:12:06,070 - DEBUG - user deleted via admin form - {'username': 'asad'}
+2025-06-01 22:12:06,071 - INFO - 127.0.0.1 - - [01/Jun/2025 22:12:06] "[32mPOST /admin/delete_user_form HTTP/1.1[0m" 302 -
+2025-06-01 22:12:06,088 - INFO - 127.0.0.1 - - [01/Jun/2025 22:12:06] "GET /admin HTTP/1.1" 200 -
+2025-06-01 22:12:11,216 - INFO - encrypted data - {'username': 'asad', 'credits': 10, 'expiry': '2025-06-01T23:12:11.215580', 'deleted': False} - token: gAAAAABo...
+2025-06-01 22:12:11,216 - DEBUG - encrypted data - {'username': 'asad', 'credits': 10, 'expiry': '2025-06-01T23:12:11.215580', 'deleted': False} - token: gAAAAABo...
+2025-06-01 22:12:11,224 - INFO - admin created user via form - {'username': 'asad', 'credits': 10, 'expiry': '2025-06-01T23:12:11.215580', 'deleted': False} - token: gAAAAABo...
+2025-06-01 22:12:11,224 - DEBUG - admin created user via form - {'username': 'asad', 'credits': 10, 'expiry': '2025-06-01T23:12:11.215580', 'deleted': False} - token: gAAAAABo...
+2025-06-01 22:12:11,225 - INFO - 127.0.0.1 - - [01/Jun/2025 22:12:11] "[32mPOST /admin/create_user_form HTTP/1.1[0m" 302 -
+2025-06-01 22:12:11,238 - INFO - 127.0.0.1 - - [01/Jun/2025 22:12:11] "GET /admin HTTP/1.1" 200 -
+2025-06-01 22:12:15,626 - INFO - api_key generated - {'username': 'asad'} - api_key: 0ebb39a6...
+2025-06-01 22:12:15,626 - DEBUG - api_key generated - {'username': 'asad'} - api_key: 0ebb39a6...
+2025-06-01 22:12:15,630 - INFO - 127.0.0.1 - - [01/Jun/2025 22:12:15] "[32mPOST /admin/generate_api_key_form HTTP/1.1[0m" 302 -
+2025-06-01 22:12:15,639 - INFO - 127.0.0.1 - - [01/Jun/2025 22:12:15] "GET /admin HTTP/1.1" 200 -
+2025-06-01 22:15:55,666 - INFO - api_key and token deleted via admin form - {'username': 'asad', 'api_key': '0ebb39a6...'}
+2025-06-01 22:15:55,666 - DEBUG - api_key and token deleted via admin form - {'username': 'asad', 'api_key': '0ebb39a6...'}
+2025-06-01 22:15:55,667 - INFO - 127.0.0.1 - - [01/Jun/2025 22:15:55] "[32mPOST /admin/delete_api_key_form HTTP/1.1[0m" 302 -
+2025-06-01 22:15:55,680 - INFO - 127.0.0.1 - - [01/Jun/2025 22:15:55] "GET /admin HTTP/1.1" 200 -
+2025-06-01 22:16:18,296 - INFO - encrypted data - {'username': 'admin', 'credits': 10, 'expiry': '2025-06-01T23:16:18.295928', 'deleted': False} - token: gAAAAABo...
+2025-06-01 22:16:18,296 - DEBUG - encrypted data - {'username': 'admin', 'credits': 10, 'expiry': '2025-06-01T23:16:18.295928', 'deleted': False} - token: gAAAAABo...
+2025-06-01 22:16:18,307 - INFO - admin created user via form - {'username': 'admin', 'credits': 10, 'expiry': '2025-06-01T23:16:18.295928', 'deleted': False} - token: gAAAAABo...
+2025-06-01 22:16:18,308 - DEBUG - admin created user via form - {'username': 'admin', 'credits': 10, 'expiry': '2025-06-01T23:16:18.295928', 'deleted': False} - token: gAAAAABo...
+2025-06-01 22:16:18,309 - INFO - 127.0.0.1 - - [01/Jun/2025 22:16:18] "[32mPOST /admin/create_user_form HTTP/1.1[0m" 302 -
+2025-06-01 22:16:18,321 - INFO - 127.0.0.1 - - [01/Jun/2025 22:16:18] "GET /admin HTTP/1.1" 200 -
+2025-06-01 22:16:21,580 - INFO - api_key generated - {'username': 'asad'} - api_key: 0ebb39a6...
+2025-06-01 22:16:21,580 - DEBUG - api_key generated - {'username': 'asad'} - api_key: 0ebb39a6...
+2025-06-01 22:16:21,581 - INFO - 127.0.0.1 - - [01/Jun/2025 22:16:21] "[32mPOST /admin/generate_api_key_form HTTP/1.1[0m" 302 -
+2025-06-01 22:16:21,590 - INFO - 127.0.0.1 - - [01/Jun/2025 22:16:21] "GET /admin HTTP/1.1" 200 -
+2025-06-01 22:16:27,833 - INFO - user deleted via admin form - {'username': 'admin'}
+2025-06-01 22:16:27,834 - DEBUG - user deleted via admin form - {'username': 'admin'}
+2025-06-01 22:16:27,834 - INFO - 127.0.0.1 - - [01/Jun/2025 22:16:27] "[32mPOST /admin/delete_user_form HTTP/1.1[0m" 302 -
+2025-06-01 22:16:27,848 - INFO - 127.0.0.1 - - [01/Jun/2025 22:16:27] "GET /admin HTTP/1.1" 200 -
+2025-06-01 22:16:37,596 - INFO - api_key and token deleted via admin form - {'username': 'asad', 'api_key': '0ebb39a6...'}
+2025-06-01 22:16:37,597 - DEBUG - api_key and token deleted via admin form - {'username': 'asad', 'api_key': '0ebb39a6...'}
+2025-06-01 22:16:37,598 - INFO - 127.0.0.1 - - [01/Jun/2025 22:16:37] "[32mPOST /admin/delete_api_key_form HTTP/1.1[0m" 302 -
+2025-06-01 22:16:37,613 - INFO - 127.0.0.1 - - [01/Jun/2025 22:16:37] "GET /admin HTTP/1.1" 200 -
+2025-06-01 22:16:42,928 - INFO - user deleted via admin form - {'username': 'asad'}
+2025-06-01 22:16:42,928 - DEBUG - user deleted via admin form - {'username': 'asad'}
+2025-06-01 22:16:42,929 - INFO - 127.0.0.1 - - [01/Jun/2025 22:16:42] "[32mPOST /admin/delete_user_form HTTP/1.1[0m" 302 -
+2025-06-01 22:16:42,944 - INFO - 127.0.0.1 - - [01/Jun/2025 22:16:42] "GET /admin HTTP/1.1" 200 -
+2025-06-01 22:16:47,127 - INFO - encrypted data - {'username': 'admin', 'credits': 10, 'expiry': '2025-06-01T23:16:47.127289', 'deleted': False} - token: gAAAAABo...
+2025-06-01 22:16:47,127 - DEBUG - encrypted data - {'username': 'admin', 'credits': 10, 'expiry': '2025-06-01T23:16:47.127289', 'deleted': False} - token: gAAAAABo...
+2025-06-01 22:16:47,135 - INFO - admin created user via form - {'username': 'admin', 'credits': 10, 'expiry': '2025-06-01T23:16:47.127289', 'deleted': False} - token: gAAAAABo...
+2025-06-01 22:16:47,139 - DEBUG - admin created user via form - {'username': 'admin', 'credits': 10, 'expiry': '2025-06-01T23:16:47.127289', 'deleted': False} - token: gAAAAABo...
+2025-06-01 22:16:47,140 - INFO - 127.0.0.1 - - [01/Jun/2025 22:16:47] "[32mPOST /admin/create_user_form HTTP/1.1[0m" 302 -
+2025-06-01 22:16:47,149 - INFO - 127.0.0.1 - - [01/Jun/2025 22:16:47] "GET /admin HTTP/1.1" 200 -
+2025-06-01 22:16:52,700 - INFO - api_key generated - {'username': 'admin'} - api_key: cd938f73...
+2025-06-01 22:16:52,700 - DEBUG - api_key generated - {'username': 'admin'} - api_key: cd938f73...
+2025-06-01 22:16:52,702 - INFO - 127.0.0.1 - - [01/Jun/2025 22:16:52] "[32mPOST /admin/generate_api_key_form HTTP/1.1[0m" 302 -
+2025-06-01 22:16:52,717 - INFO - 127.0.0.1 - - [01/Jun/2025 22:16:52] "GET /admin HTTP/1.1" 200 -
+2025-06-01 22:16:57,835 - INFO - encrypted data - {'username': 'admin', 'credits': 10, 'expiry': '2025-06-01T23:46:47.127289', 'deleted': False} - token: gAAAAABo...
+2025-06-01 22:16:57,835 - DEBUG - encrypted data - {'username': 'admin', 'credits': 10, 'expiry': '2025-06-01T23:46:47.127289', 'deleted': False} - token: gAAAAABo...
+2025-06-01 22:16:57,845 - INFO - extended time via form (+30 mins) - {'username': 'admin', 'credits': 10, 'expiry': '2025-06-01T23:46:47.127289', 'deleted': False} - new_token: gAAAAABo...
+2025-06-01 22:16:57,845 - DEBUG - extended time via form (+30 mins) - {'username': 'admin', 'credits': 10, 'expiry': '2025-06-01T23:46:47.127289', 'deleted': False} - new_token: gAAAAABo...
+2025-06-01 22:16:57,846 - INFO - 127.0.0.1 - - [01/Jun/2025 22:16:57] "[32mPOST /admin/extend_time_form HTTP/1.1[0m" 302 -
+2025-06-01 22:16:57,861 - INFO - 127.0.0.1 - - [01/Jun/2025 22:16:57] "GET /admin HTTP/1.1" 200 -
+2025-06-01 22:17:01,893 - INFO - 127.0.0.1 - - [01/Jun/2025 22:17:01] "[32mPOST /admin/check_user_status_form HTTP/1.1[0m" 302 -
+2025-06-01 22:17:01,905 - INFO - 127.0.0.1 - - [01/Jun/2025 22:17:01] "GET /admin HTTP/1.1" 200 -
+2025-06-05 12:14:41,299 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-06-05 12:14:41,300 - INFO - [33mPress CTRL+C to quit[0m
+2025-06-05 12:14:48,320 - INFO - 127.0.0.1 - - [05/Jun/2025 12:14:48] "[32mGET /admin HTTP/1.1[0m" 302 -
+2025-06-05 12:14:48,383 - INFO - 127.0.0.1 - - [05/Jun/2025 12:14:48] "GET /login?next=http://127.0.0.1:5000/admin HTTP/1.1" 200 -
+2025-06-05 12:14:48,619 - INFO - 127.0.0.1 - - [05/Jun/2025 12:14:48] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-06-05 12:14:53,159 - INFO - 127.0.0.1 - - [05/Jun/2025 12:14:53] "[32mPOST /login HTTP/1.1[0m" 302 -
+2025-06-05 12:14:53,240 - INFO - 127.0.0.1 - - [05/Jun/2025 12:14:53] "GET /admin HTTP/1.1" 200 -
+2025-06-05 12:15:03,787 - INFO - all users deleted via admin form - {'action': 'delete_all'}
+2025-06-05 12:15:03,788 - DEBUG - all users deleted via admin form - {'action': 'delete_all'}
+2025-06-05 12:15:03,789 - INFO - 127.0.0.1 - - [05/Jun/2025 12:15:03] "[32mPOST /admin/delete_user_form HTTP/1.1[0m" 302 -
+2025-06-05 12:15:03,807 - INFO - 127.0.0.1 - - [05/Jun/2025 12:15:03] "GET /admin HTTP/1.1" 200 -
+2025-06-05 12:15:17,988 - INFO - 127.0.0.1 - - [05/Jun/2025 12:15:17] "[32mGET /logout HTTP/1.1[0m" 302 -
+2025-06-05 12:15:18,001 - INFO - 127.0.0.1 - - [05/Jun/2025 12:15:18] "GET /login HTTP/1.1" 200 -
+2025-06-05 12:29:22,605 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-06-05 12:29:22,605 - INFO - [33mPress CTRL+C to quit[0m
+2025-06-05 12:29:28,749 - INFO - 127.0.0.1 - - [05/Jun/2025 12:29:28] "[32mGET /admin HTTP/1.1[0m" 302 -
+2025-06-05 12:29:28,812 - INFO - 127.0.0.1 - - [05/Jun/2025 12:29:28] "GET /login?next=http://127.0.0.1:5000/admin HTTP/1.1" 200 -
+2025-06-05 12:29:34,234 - INFO - 127.0.0.1 - - [05/Jun/2025 12:29:34] "[32mPOST /login HTTP/1.1[0m" 302 -
+2025-06-05 12:29:34,373 - INFO - 127.0.0.1 - - [05/Jun/2025 12:29:34] "GET /admin HTTP/1.1" 200 -
+2025-06-05 12:30:48,543 - INFO - 127.0.0.1 - - [05/Jun/2025 12:30:48] "[32mPOST /admin/create_user_form HTTP/1.1[0m" 302 -
+2025-06-05 12:30:48,567 - INFO - 127.0.0.1 - - [05/Jun/2025 12:30:48] "GET /admin HTTP/1.1" 200 -
+2025-06-05 12:30:59,391 - INFO - 127.0.0.1 - - [05/Jun/2025 12:30:59] "[32mPOST /admin/create_user_form HTTP/1.1[0m" 302 -
+2025-06-05 12:30:59,417 - INFO - 127.0.0.1 - - [05/Jun/2025 12:30:59] "GET /admin HTTP/1.1" 200 -
+2025-06-05 12:31:13,066 - INFO - encrypted data - {'username': 'atta@gmail.com', 'credits': 10, 'expiry': '2025-06-05T12:32:13.065674', 'deleted': False} - token: gAAAAABo...
+2025-06-05 12:31:13,066 - DEBUG - encrypted data - {'username': 'atta@gmail.com', 'credits': 10, 'expiry': '2025-06-05T12:32:13.065674', 'deleted': False} - token: gAAAAABo...
+2025-06-05 12:31:13,083 - INFO - admin created user via form - {'username': 'atta@gmail.com', 'credits': 10, 'expiry': '2025-06-05T12:32:13.065674', 'deleted': False} - token: gAAAAABo...
+2025-06-05 12:31:13,083 - DEBUG - admin created user via form - {'username': 'atta@gmail.com', 'credits': 10, 'expiry': '2025-06-05T12:32:13.065674', 'deleted': False} - token: gAAAAABo...
+2025-06-05 12:31:13,085 - INFO - 127.0.0.1 - - [05/Jun/2025 12:31:13] "[32mPOST /admin/create_user_form HTTP/1.1[0m" 302 -
+2025-06-05 12:31:13,112 - INFO - 127.0.0.1 - - [05/Jun/2025 12:31:13] "GET /admin HTTP/1.1" 200 -
+2025-06-05 12:31:20,707 - INFO - api_key generated - {'username': 'atta@gmail.com'} - api_key: 633281ed...
+2025-06-05 12:31:20,707 - DEBUG - api_key generated - {'username': 'atta@gmail.com'} - api_key: 633281ed...
+2025-06-05 12:31:20,713 - INFO - 127.0.0.1 - - [05/Jun/2025 12:31:20] "[32mPOST /admin/generate_api_key_form HTTP/1.1[0m" 302 -
+2025-06-05 12:31:20,733 - INFO - 127.0.0.1 - - [05/Jun/2025 12:31:20] "GET /admin HTTP/1.1" 200 -
+2025-06-05 12:31:46,447 - INFO - 127.0.0.1 - - [05/Jun/2025 12:31:46] "[32mPOST /admin/check_user_status_form HTTP/1.1[0m" 302 -
+2025-06-05 12:31:46,469 - INFO - 127.0.0.1 - - [05/Jun/2025 12:31:46] "GET /admin HTTP/1.1" 200 -
+2025-06-05 12:32:08,132 - INFO - 127.0.0.1 - - [05/Jun/2025 12:32:08] "[32mPOST /admin/check_user_status_form HTTP/1.1[0m" 302 -
+2025-06-05 12:32:08,157 - INFO - 127.0.0.1 - - [05/Jun/2025 12:32:08] "GET /admin HTTP/1.1" 200 -
+2025-06-05 12:32:12,923 - INFO - 127.0.0.1 - - [05/Jun/2025 12:32:12] "[32mPOST /admin/check_user_status_form HTTP/1.1[0m" 302 -
+2025-06-05 12:32:12,944 - INFO - 127.0.0.1 - - [05/Jun/2025 12:32:12] "GET /admin HTTP/1.1" 200 -
+2025-06-05 12:32:19,547 - INFO - 127.0.0.1 - - [05/Jun/2025 12:32:19] "[32mPOST /admin/check_user_status_form HTTP/1.1[0m" 302 -
+2025-06-05 12:32:19,565 - INFO - 127.0.0.1 - - [05/Jun/2025 12:32:19] "GET /admin HTTP/1.1" 200 -
+2025-06-05 12:34:07,341 - INFO - user deleted via admin form - {'username': 'atta@gmail.com'}
+2025-06-05 12:34:07,342 - DEBUG - user deleted via admin form - {'username': 'atta@gmail.com'}
+2025-06-05 12:34:07,345 - INFO - 127.0.0.1 - - [05/Jun/2025 12:34:07] "[32mPOST /admin/delete_user_form HTTP/1.1[0m" 302 -
+2025-06-05 12:34:07,367 - INFO - 127.0.0.1 - - [05/Jun/2025 12:34:07] "GET /admin HTTP/1.1" 200 -
+2025-06-05 12:35:56,310 - INFO - 127.0.0.1 - - [05/Jun/2025 12:35:56] "[32mGET /logout HTTP/1.1[0m" 302 -
+2025-06-05 12:35:56,332 - INFO - 127.0.0.1 - - [05/Jun/2025 12:35:56] "GET /login HTTP/1.1" 200 -
+2025-06-05 12:39:25,930 - INFO - 127.0.0.1 - - [05/Jun/2025 12:39:25] "[32mPOST /login HTTP/1.1[0m" 302 -
+2025-06-05 12:39:25,950 - INFO - 127.0.0.1 - - [05/Jun/2025 12:39:25] "GET /admin HTTP/1.1" 200 -
+2025-06-05 12:54:07,983 - INFO - 127.0.0.1 - - [05/Jun/2025 12:54:07] "GET /admin HTTP/1.1" 200 -
+2025-06-05 12:54:09,902 - INFO - 127.0.0.1 - - [05/Jun/2025 12:54:09] "[32mGET /logout HTTP/1.1[0m" 302 -
+2025-06-05 12:54:09,920 - INFO - 127.0.0.1 - - [05/Jun/2025 12:54:09] "GET /login HTTP/1.1" 200 -
+2025-06-05 12:54:29,365 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-06-05 12:54:29,365 - INFO - [33mPress CTRL+C to quit[0m
+2025-06-05 12:54:34,224 - INFO - 127.0.0.1 - - [05/Jun/2025 12:54:34] "GET /login HTTP/1.1" 200 -
+2025-06-05 12:54:42,434 - INFO - 127.0.0.1 - - [05/Jun/2025 12:54:42] "POST /login HTTP/1.1" 200 -
+2025-06-05 12:54:48,398 - INFO - 127.0.0.1 - - [05/Jun/2025 12:54:48] "[32mPOST /login HTTP/1.1[0m" 302 -
+2025-06-05 12:54:48,578 - INFO - 127.0.0.1 - - [05/Jun/2025 12:54:48] "GET /admin HTTP/1.1" 200 -
+2025-06-05 12:55:03,713 - INFO - encrypted data - {'username': 'atta@gmail.com', 'credits': 10, 'expiry': '2026-06-05T12:55:03.712702', 'deleted': False} - token: gAAAAABo...
+2025-06-05 12:55:03,713 - DEBUG - encrypted data - {'username': 'atta@gmail.com', 'credits': 10, 'expiry': '2026-06-05T12:55:03.712702', 'deleted': False} - token: gAAAAABo...
+2025-06-05 12:55:03,729 - INFO - admin created user via form - {'username': 'atta@gmail.com', 'credits': 10, 'expiry': '2026-06-05T12:55:03.712702', 'deleted': False} - token: gAAAAABo...
+2025-06-05 12:55:03,729 - DEBUG - admin created user via form - {'username': 'atta@gmail.com', 'credits': 10, 'expiry': '2026-06-05T12:55:03.712702', 'deleted': False} - token: gAAAAABo...
+2025-06-05 12:55:03,733 - INFO - 127.0.0.1 - - [05/Jun/2025 12:55:03] "[32mPOST /admin/create_user_form HTTP/1.1[0m" 302 -
+2025-06-05 12:55:03,758 - INFO - 127.0.0.1 - - [05/Jun/2025 12:55:03] "GET /admin HTTP/1.1" 200 -
+2025-06-05 12:55:12,131 - INFO - 127.0.0.1 - - [05/Jun/2025 12:55:12] "[32mPOST /admin/check_user_status_form HTTP/1.1[0m" 302 -
+2025-06-05 12:55:12,157 - INFO - 127.0.0.1 - - [05/Jun/2025 12:55:12] "GET /admin HTTP/1.1" 200 -
+2025-06-05 12:55:18,251 - INFO - user deleted via admin form - {'username': 'atta@gmail.com'}
+2025-06-05 12:55:18,251 - DEBUG - user deleted via admin form - {'username': 'atta@gmail.com'}
+2025-06-05 12:55:18,253 - INFO - 127.0.0.1 - - [05/Jun/2025 12:55:18] "[32mPOST /admin/delete_user_form HTTP/1.1[0m" 302 -
+2025-06-05 12:55:18,279 - INFO - 127.0.0.1 - - [05/Jun/2025 12:55:18] "GET /admin HTTP/1.1" 200 -
+2025-06-05 12:56:28,566 - INFO - 127.0.0.1 - - [05/Jun/2025 12:56:28] "[32mGET /logout HTTP/1.1[0m" 302 -
+2025-06-05 12:56:28,582 - INFO - 127.0.0.1 - - [05/Jun/2025 12:56:28] "GET /login HTTP/1.1" 200 -

@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard</title>
   <style>
     :root {
@@ -35,7 +36,7 @@
     }
 
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'Segoe UI', Tahoma, Verdana, sans-serif;
       background-color: var(--bg-color);
       margin: 0;
       padding: 20px;
@@ -50,14 +51,20 @@
       font-size: 2.8rem;
     }
 
-    .theme-toggle {
-      position: fixed;
+    .top-bar {
+      position: absolute;
       top: 20px;
-      right: 20px;
+      left: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .theme-toggle {
       width: 40px;
       height: 40px;
       background: var(--accent-color);
-      color: #fff;
+      color: white;
       border: none;
       border-radius: 50%;
       cursor: pointer;
@@ -80,6 +87,20 @@
 
     [data-theme="dark"] .theme-toggle::before {
       content: '🌙';
+    }
+
+    .logout-button {
+      padding: 8px 16px;
+      font-size: 14px;
+      background: linear-gradient(to right, var(--danger-color), var(--danger-hover));
+      color: white;
+      border-radius: 8px;
+      text-decoration: none;
+      text-align: center;
+    }
+
+    .logout-button:hover {
+      background: linear-gradient(to right, var(--danger-hover), var(--danger-color));
     }
 
     .dashboard-grid {
@@ -127,6 +148,17 @@
       flex-direction: column;
     }
 
+    .expiry-group {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .expiry-group input,
+    .expiry-group select {
+      flex: 1;
+    }
+
     form label {
       display: block;
       margin-bottom: 6px;
@@ -137,19 +169,20 @@
     input[type="text"],
     input[type="password"],
     input[type="number"],
-    textarea {
+    select {
       width: 100%;
       box-sizing: border-box;
       padding: 12px 14px;
       margin-bottom: 16px;
       border: 1px solid var(--border-color);
-      border-radius: 10px;
+      border-radius: 8px;
       font-size: 15px;
       background-color: var(--input-bg);
-      transition: border-color 0.3s;
+      color: var(--text-color);
+      transition: border-color 0.3s ease;
     }
 
-    input:focus, textarea:focus {
+    input:focus, select:focus {
       border-color: var(--accent-color);
       outline: none;
     }
@@ -158,41 +191,30 @@
       width: 100%;
       padding: 12px;
       font-size: 16px;
-      border-radius: 10px;
+      border-radius: 8px;
       border: none;
       background: linear-gradient(to right, var(--accent-color), var(--accent-hover));
-      color: #fff;
+      color: white;
       cursor: pointer;
       transition: background 0.3s ease;
+      position: relative;
       margin-top: auto;
     }
 
-    button:hover {
+    button:disabled {
+      background: #6c757d;
+      cursor: not-allowed;
+    }
+
+    button:hover:not(:disabled) {
       background: linear-gradient(to right, var(--accent-hover), var(--accent-color));
-    }
-
-    .logout-button {
-      display: block;
-      width: 120px;
-      margin: 0 auto 30px;
-      padding: 10px;
-      font-size: 14px;
-      background: linear-gradient(to right, var(--danger-color), var(--danger-hover));
-      color: #fff;
-      border-radius: 10px;
-      text-decoration: none;
-      text-align: center;
-    }
-
-    .logout-button:hover {
-      background: linear-gradient(to right, var(--danger-hover), var(--danger-color));
     }
 
     .flash {
       margin: 20px auto;
       max-width: 800px;
-      padding: 15px 20px;
-      border-radius: 8px;
+      padding: 15px 25px;
+      border-radius: 10px;
       font-weight: 500;
     }
 
@@ -204,14 +226,14 @@
 
     .flash.danger {
       background-color: #fbe9e7;
-      color: #c62828;
-      border: 1px solid #f5c6cb;
+      color: #d32f2f;
+      border: 1px solid #ef5350;
     }
 
     .flash.info {
-      background-color: #e3f2fd;
-      color: #1565c0;
-      border: 1px solid #90caf9;
+      background-color: #e1f5fe;
+      color: #0277bd;
+      border: 1px solid #4fc3f7;
     }
 
     .note {
@@ -221,16 +243,22 @@
       font-style: italic;
     }
 
+    .api-keys-table-container {
+      max-height: 400px;
+      overflow-y: auto;
+      margin: 16px 0;
+      position: relative;
+    }
+
     .api-keys-table {
       width: 100%;
       border-collapse: collapse;
-      margin: 16px 0;
       font-size: 13px;
     }
 
     .api-keys-table th,
     .api-keys-table td {
-      padding: 10px;
+      padding: 12px;
       text-align: left;
       border-bottom: 1px solid var(--border-color);
     }
@@ -239,6 +267,13 @@
       background-color: var(--input-bg);
       color: var(--text-color);
       font-weight: 600;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    [data-theme="dark"] .api-keys-table th {
+      color: var(--accent-color);
     }
 
     .api-keys-table td {
@@ -249,7 +284,7 @@
       font-family: monospace;
       color: var(--note-color);
       display: inline-block;
-      max-width: 100px;
+      max-width: 150px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -266,9 +301,9 @@
       color: var(--accent-color);
       cursor: pointer;
       font-size: 12px;
-      padding: 4px 8px;
+      padding: 6px 12px;
       border-radius: 4px;
-      transition: all 0.2s ease;
+      transition: background 0.2s ease;
     }
 
     .toggle-api-key:hover, .copy-api-key:hover, .delete-api-key:hover {
@@ -280,25 +315,10 @@
     }
 
     .delete-api-key:hover {
-      color: var(--danger-hover);
       background: rgba(220, 53, 69, 0.1);
+      color: var(--danger-hover);
     }
 
-    .new-api-key-section {
-      background-color: #e9f7ef;
-      padding: 20px;
-      border-radius: 12px;
-      min-height: 320px;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .new-api-key-section textarea {
-      font-family: monospace;
-      resize: none;
-    }
-
-    /* Modal Styles */
     .modal {
       display: none;
       position: fixed;
@@ -306,7 +326,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background-color: rgba(0, 0, 0, 0.5);
+      background-color: rgba(0, 0, 0, 0.6);
       z-index: 1000;
       align-items: center;
       justify-content: center;
@@ -314,35 +334,54 @@
 
     .modal-content {
       background-color: var(--card-bg);
-      padding: 20px;
-      border-radius: 12px;
+      padding: 24px;
+      border-radius: 8px;
       max-width: 400px;
       width: 90%;
       text-align: center;
       position: relative;
-      box-shadow: 0 4px 12px var(--shadow-color);
+      box-shadow: 0 4px 16px var(--shadow-color);
     }
 
     .modal-content p {
-      margin: 10px 0;
+      margin: 15px 0;
       font-family: monospace;
       word-break: break-all;
       color: var(--text-color);
+      font-size: 14px;
     }
 
     .close-modal {
       position: absolute;
-      top: 10px;
-      right: 10px;
+      top: 12px;
+      right: 16px;
       background: none;
       border: none;
-      font-size: 18px;
+      font-size: 14px;
       cursor: pointer;
       color: var(--text-color);
+      padding: 4px;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
     }
 
     .close-modal:hover {
+      background-color: transparent;
       color: var(--accent-color);
+    }
+
+    .search-container {
+      margin-bottom: 16px;
+    }
+
+    .search-container input {
+      width: 100%;
+      padding: 10px;
+      font-size: 14px;
     }
 
     @media (max-width: 600px) {
@@ -356,7 +395,7 @@
       }
 
       h2 {
-        font-size: 1.3rem;
+        font-size: 1.4rem;
       }
 
       .api-section-grid {
@@ -372,14 +411,232 @@
       }
 
       .api-key-hidden {
-        max-width: 80px;
+        max-width: 100px;
+      }
+
+      .action-buttons {
+        flex-wrap: wrap;
       }
     }
   </style>
+</head>
+<body>
+  <div class="top-bar">
+    <a href="{{ url_for('logout') }}" class="logout-button" aria-label="Log out">Logout</a>
+    <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()"></button>
+  </div>
+  <h1>Admin Dashboard</h1>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="flash {{ category }}" role="alert">{{ message | safe }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <div class="dashboard-grid">
+    <section aria-labelledby="create-user">
+      <h2 id="create-user">Create User</h2>
+      <form method="POST" action="{{ url_for('create_user_form') }}" onsubmit="handleFormSubmit(this)">
+        <label for="username">Email</label>
+        <input type="text" name="username" id="username" placeholder="Enter email" required aria-required="true">
+
+        <label for="password">Password</label>
+        <input type="password" name="password" id="password" placeholder="Enter password" required aria-required="true">
+
+        <label for="credits">Credits</label>
+        <input type="number" name="credits" id="credits" value="10" min="1" required aria-required="true">
+
+        <label for="expiry_value">Expiry</label>
+        <div class="expiry-group">
+          <input type="number" name="expiry_value" id="expiry_value" value="365" min="1" placeholder="Enter expiry value" required aria-required="true">
+          <select name="expiry_unit" id="expiry_unit">
+            <option value="Minutes">Minutes</option>
+            <option value="Days" selected>Days</option>
+            <option value="Months">Months</option>
+          </select>
+        </div>
+
+        <button type="submit">Create User</button>
+      </form>
+    </section>
+
+    <section aria-labelledby="generate-api-key">
+      <h2 id="generate-api-key">Generate API Key</h2>
+      <p class="note"><strong>Note:</strong> Users can have only one API key at a time.</p>
+      <form method="POST" action="{{ url_for('generate_api_key_form') }}" onsubmit="handleFormSubmit(this)">
+        <label for="account_id_generate">Select User</label>
+        <select name="account_id" id="account_id_generate" required aria-required="true">
+          <option value="" disabled selected>Select a user</option>
+          {% if users %}
+            {% for user in users %}
+              <option value="{{ user.id }}">{{ user.username }}</option>
+            {% endfor %}
+          {% else %}
+            <option value="" disabled>No users found</option>
+          {% endif %}
+        </select>
+
+        <button type="submit">Generate API Key</button>
+      </form>
+    </section>
+
+    <section aria-labelledby="refill-credits">
+      <h2 id="refill-credits">Refill Credits</h2>
+      <form method="POST" action="{{ url_for('refill_credits_form') }}" onsubmit="handleFormSubmit(this)">
+        <label for="account_id_credits">Select User</label>
+        <select name="account_id" id="account_id_credits" required aria-required="true">
+          <option value="" disabled selected>Select a user</option>
+          {% if users %}
+            {% for user in users %}
+              <option value="{{ user.id }}">{{ user.username }}</option>
+            {% endfor %}
+          {% else %}
+            <option value="" disabled>No users found</option>
+          {% endif %}
+        </select>
+
+        <label for="add_credits">Add Credits</label>
+        <input type="number" name="add_credits" id="add_credits" value="10" min="1" required aria-required="true">
+
+        <button type="submit">Refill Credits</button>
+      </form>
+    </section>
+
+    <section aria-labelledby="extend-time">
+      <h2 id="extend-time">Extend Time</h2>
+      <form method="POST" action="{{ url_for('extend_time_form') }}" onsubmit="handleFormSubmit(this)">
+        <label for="account_id_time">Select User</label>
+        <select name="account_id" id="account_id_time" required aria-required="true">
+          <option value="" disabled selected>Select a user</option>
+          {% if users %}
+            {% for user in users %}
+              <option value="{{ user.id }}">{{ user.username }}</option>
+            {% endfor %}
+          {% else %}
+            <option value="" disabled>No users found</option>
+          {% endif %}
+        </select>
+
+        <label for="add_minutes">Add Time</label>
+        <div class="expiry-group">
+          <input type="number" name="add_minutes" id="add_minutes" value="30" min="1" required aria-required="true">
+          <select name="add_unit" id="add_unit">
+            <option value="Minutes">Minutes</option>
+            <option value="Days" selected>Days</option>
+            <option value="Months">Months</option>
+          </select>
+        </div>
+
+        <button type="submit">Extend Time</button>
+      </form>
+    </section>
+
+    <section aria-labelledby="check-status">
+      <h2 id="check-status">Check User Status</h2>
+      <form method="POST" action="{{ url_for('check_user_status_form') }}" onsubmit="handleFormSubmit(this)">
+        <label for="account_id_status">Select User</label>
+        <select name="account_id" id="account_id_status" required aria-required="true">
+          <option value="" disabled selected>Select a user</option>
+          {% if users %}
+            {% for user in users %}
+              <option value="{{ user.id }}">{{ user.username }}</option>
+            {% endfor %}
+          {% else %}
+            <option value="" disabled>No users found</option>
+          {% endif %}
+        </select>
+        <button type="submit">Check Status</button>
+      </form>
+    </section>
+
+    <section aria-labelledby="delete-user">
+      <h2 id="delete-user">Delete User</h2>
+      <form id="delete-user-form" method="POST" action="{{ url_for('delete_user_form') }}" onsubmit="return handleDeleteForm(event)">
+        <label for="account_id_delete">Select User</label>
+        <select name="account_id" id="account_id_delete" required aria-required="true">
+          <option value="" disabled selected>Choose an option...</option>
+          <option value="delete_all">Delete All Users</option>
+          {% if users %}
+            {% for user in users %}
+              <option value="{{ user.id }}">{{ user.username }}</option>
+            {% endfor %}
+          {% else %}
+            <option value="" disabled>No users found</option>
+          {% endif %}
+        </select>
+        <button type="submit">Delete User</button>
+      </form>
+    </section>
+  </div>
+
+  <div class="api-section-grid">
+    <section aria-labelledby="active-api-keys">
+      <h2 id="active-api-keys">Active API Keys</h2>
+      <div class="search-container">
+        <input type="text" id="api-key-search" placeholder="Search API keys by username..." oninput="filterApiKeys()">
+      </div>
+      <div class="api-keys-table-container">
+        {% if active_api_keys %}
+          <table class="api-keys-table" aria-describedby="active-api-keys">
+            <thead>
+              <tr>
+                <th scope="col">User</th>
+                <th scope="col">Key</th>
+                <th scope="col">Credits</th>
+                <th scope="col">Token</th>
+                <th scope="col">Expiry</th>
+                <th scope="col">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="api-keys-tbody">
+              {% for key in active_api_keys %}
+                <tr class="api-key-row">
+                  <td>{{ key.username }}</td>
+                  <td>
+                    <span class="api-key-hidden" id="api-key-{{ key.api_key_id }}" data-api-key="{{ key.api_key }}">{{ key.api_key[:8] }}...</span>
+                  </td>
+                  <td>{{ key.credits }}</td>
+                  <td>{{ key.token[:8] }}...</td>
+                  <td>{{ key.expiry }}</td>
+                  <td class="action-buttons">
+                    <button class="toggle-api-key" onclick="showApiKey('api-key-{{ key.api_key_id }}')" aria-label="Show API key for {{ key.username }}">Show</button>
+                    <button class="copy-api-key" onclick="copyApiKey('api-key-{{ key.api_key_id }}')" aria-label="Copy API key for {{ key.username }}">Copy</button>
+                    <button class="delete-api-key" onclick="deleteApiKey('{{ key.api_key_id }}')" aria-label="Delete API key for {{ key.username }}">Delete</button>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          <p>No active API keys found.</p>
+        {% endif %}
+      </div>
+    </section>
+  </div>
+
+  <div id="api-key-modal" class="modal" role="dialog" aria-labelledby="modal-title">
+    <div class="modal-content">
+      <button class="close-modal" onclick="closeModal()" aria-label="Close modal">✕</button>
+      <h3 id="modal-title">API Key</h3>
+      <p id="modal-api-key"></p>
+    </div>
+  </div>
 
   <script>
-    function showApiKey(apiKeyId) {
-      const apiKeyElement = document.getElementById(apiKeyId);
+    function toggleTheme() {
+      console.log('Toggling theme');
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      console.log('Theme set to:', newTheme);
+    }
+
+    function showApiKey(id) {
+      console.log('Showing API key for ID:', id);
+      const apiKeyElement = document.getElementById(id);
       const modal = document.getElementById('api-key-modal');
       const modalKey = document.getElementById('modal-api-key');
       modalKey.textContent = apiKeyElement.dataset.apiKey;
@@ -387,181 +644,111 @@
     }
 
     function closeModal() {
+      console.log('Closing modal');
       const modal = document.getElementById('api-key-modal');
       modal.style.display = 'none';
     }
 
-    function copyApiKey(apiKeyId) {
-      const apiKeyElement = document.getElementById(apiKeyId);
-      navigator.clipboard.writeText(apiKeyElement.dataset.apiKey).then(() => {
-        alert('API Key copied to clipboard!');
+    function copyApiKey(id) {
+      console.log('Copying API key for ID:', id);
+      const apiKeyElement = document.getElementById(id);
+      const apiKey = apiKeyElement.dataset.apiKey;
+      navigator.clipboard.writeText(apiKey).then(() => {
+        alert('API key copied to clipboard!');
+        console.log('API key copied successfully');
       }).catch(err => {
-        alert('Failed to copy API Key: ' + err);
+        console.error('Failed to copy API key:', err);
+        alert('Failed to copy API key: ' + err.message);
       });
     }
 
-    function toggleTheme() {
-      const html = document.documentElement;
-      const currentTheme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-      html.setAttribute('data-theme', currentTheme);
-      localStorage.setItem('theme', currentTheme);
+    function deleteApiKey(apiKeyId) {
+      console.log('Attempting to delete API key ID:', apiKeyId);
+      if (confirm('Are you sure you want to delete this API key?')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{{ url_for("delete_api_key_form") }}';
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'api_key_id';
+        input.value = apiKeyId;
+        form.appendChild(input);
+        document.body.appendChild(form);
+        console.log('Submitting delete API key form');
+        form.submit();
+      } else {
+        console.log('API key deletion cancelled');
+      }
+    }
+
+    function filterApiKeys() {
+      const searchInput = document.getElementById('api-key-search').value.toLowerCase();
+      const rows = document.querySelectorAll('.api-key-row');
+      rows.forEach(row => {
+        const username = row.cells[0].textContent.toLowerCase();
+        row.style.display = username.includes(searchInput) ? '' : 'none';
+      });
+    }
+
+    function handleDeleteForm(event) {
+      event.preventDefault();
+      const form = event.target;
+      const accountId = form.querySelector('select[name="account_id"]').value;
+      console.log('Delete user form submitted with account_id:', accountId);
+      if (!accountId) {
+        alert('Please select an option to delete.');
+        console.log('No account_id selected');
+        return false;
+      }
+      const confirmMessage = accountId === 'delete_all'
+        ? 'Are you sure you want to delete ALL users and their associated data? This action cannot be undone.'
+        : 'Are you sure you want to delete this user?';
+      if (confirm(confirmMessage)) {
+        console.log('User confirmed deletion for account_id:', accountId);
+        form.submit();
+        return true;
+      } else {
+        console.log('User deletion cancelled');
+        return false;
+      }
+    }
+
+    function handleFormSubmit(form) {
+      console.log('Submitting form:', form.action);
+      const button = form.querySelector('button[type="submit"]');
+      button.disabled = true;
+      button.textContent = 'Processing...';
+      form.addEventListener('submit', () => {
+        setTimeout(() => {
+          button.disabled = false;
+          button.textContent = button.dataset.originalText || 'Submit';
+        }, 5000);
+      }, { once: true });
     }
 
     document.addEventListener('DOMContentLoaded', () => {
+      console.log('DOM loaded');
       const savedTheme = localStorage.getItem('theme') || 'light';
       document.documentElement.setAttribute('data-theme', savedTheme);
+      console.log('Initial theme:', savedTheme);
 
-      // Close modal when clicking outside
       const modal = document.getElementById('api-key-modal');
-      window.onclick = function(event) {
+      modal.addEventListener('click', function(event) {
         if (event.target === modal) {
-          modal.style.display = 'none';
+          closeModal();
         }
-      };
+      });
+
+      document.querySelectorAll('button[type="submit"]').forEach(button => {
+        button.dataset.originalText = button.textContent;
+      });
+
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && modal.style.display === 'flex') {
+          closeModal();
+        }
+      });
     });
   </script>
-</head>
-<body>
-  <button class="theme-toggle" onclick="toggleTheme()"></button>
-  <h1>Admin Dashboard</h1>
-
-  <a href="{{ url_for('logout') }}" class="logout-button">Logout</a>
-
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      {% for category, message in messages %}
-        <div class="flash {{ category }}">{{ message|safe }}</div>
-      {% endfor %}
-    {% endif %}
-  {% endwith %}
-
-  <div class="dashboard-grid">
-    <section>
-      <h2>Create User</h2>
-      <p class="note"><strong>Note:</strong> Copy the API key and token from the 'New API Key' section below.</p>
-      <form method="POST" action="{{ url_for('create_user_form') }}">
-        <label for="username">Username/Email</label>
-        <input type="text" name="username" id="username" placeholder="Enter username or email" required />
-
-        <label for="password">Password</label>
-        <input type="password" name="password" id="password" placeholder="Enter password" required />
-
-        <label for="credits">Credits</label>
-        <input type="number" name="credits" id="credits" value="10" min="0" required />
-
-        <label for="expiry_minutes">Expiry (minutes)</label>
-        <input type="number" name="expiry_minutes" id="expiry_minutes" value="60" min="1" required />
-
-        <button type="submit">Create User</button>
-      </form>
-    </section>
-
-    <section>
-      <h2>Refill Credits</h2>
-      <p class="note"><strong>Note:</strong> Use the new token from the 'New API Key' section below.</p>
-      <form method="POST" action="{{ url_for('refill_credits_form') }}">
-        <label for="api_key_credits">API Key</label>
-        <input type="text" name="api_key" id="api_key_credits" placeholder="Paste API key here" required />
-
-        <label for="add_credits">Add Credits</label>
-        <input type="number" name="add_credits" id="add_credits" value="10" min="1" required />
-
-        <button type="submit">Refill Credits</button>
-      </form>
-    </section>
-
-    <section>
-      <h2>Extend Time</h2>
-      <p class="note"><strong>Note:</strong> Use the new token from the 'New API Key' section below.</p>
-      <form method="POST" action="{{ url_for('extend_time_form') }}">
-        <label for="api_key_time">API Key</label>
-        <input type="text" name="api_key" id="api_key_time" placeholder="Paste API key here" required />
-
-        <label for="add_minutes">Add Minutes</label>
-        <input type="number" name="add_minutes" id="add_minutes" value="30" min="1" required />
-
-        <button type="submit">Extend Time</button>
-      </form>
-    </section>
-
-    <section>
-      <h2>Check User Status</h2>
-      <form method="POST" action="{{ url_for('check_user_status_form') }}">
-        <label for="api_key_status">API Key</label>
-        <input type="text" name="api_key" id="api_key_status" placeholder="Paste API key here" required />
-        <button type="submit">Check Status</button>
-      </form>
-    </section>
-
-    <section>
-      <h2>Delete User</h2>
-      <form method="POST" action="{{ url_for('delete_user_form') }}">
-        <label for="api_key_delete">API Key</label>
-        <input type="text" name="api_key" id="api_key_delete" placeholder="Paste API key here" required />
-        <button type="submit">Delete User</button>
-      </form>
-    </section>
-  </div>
-
-  <div class="api-section-grid">
-    {% if new_api_key and new_token %}
-    <section class="new-api-key-section">
-      <h2>New API Key</h2>
-      <p><strong>Important:</strong> Copy the API key and token for further operations.</p>
-      <label>API Key:</label>
-      <textarea readonly rows="2" style="width: 100%">{{ new_api_key }}</textarea>
-      <label>Token:</label>
-      <textarea readonly rows="4" style="width: 100%">{{ new_token }}</textarea>
-    </section>
-    {% endif %}
-
-    <section>
-      <h2>Active API Keys</h2>
-      {% if active_api_keys %}
-        <table class="api-keys-table">
-          <thead>
-            <tr>
-              <th>User</th>
-              <th>Key</th>
-              <th>Credits</th>
-              <th>Token</th>
-              <th>Expiry</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for key in active_api_keys %}
-              <tr>
-                <td>{{ key.username }}</td>
-                <td>
-                  <span class="api-key-hidden" id="api-key-{{ loop.index }}" data-api-key="{{ key.api_key }}">{{ key.api_key[:8] }}...</span>
-                </td>
-                <td>{{ key.credits }}</td>
-                <td>{{ key.token[:8] }}...</td>
-                <td>{{ key.expiry }}</td>
-                <td class="action-buttons">
-                  <button class="toggle-api-key" onclick="showApiKey('api-key-{{ loop.index }}')">Show</button>
-                  <button class="copy-api-key" onclick="copyApiKey('api-key-{{ loop.index }}')">Copy</button>
-                  <button class="delete-api-key" onclick="if(confirm('Are you sure you want to delete this API key?')) { /* Add delete functionality */ }">Delete</button>
-                </td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      {% else %}
-        <p>No active API keys found.</p>
-      {% endif %}
-    </section>
-  </div>
-
-  <!-- Modal for showing API key -->
-  <div id="api-key-modal" class="modal">
-    <div class="modal-content">
-      <button class="close-modal" onclick="closeModal()">✕</button>
-      <h3>API Key</h3>
-      <p id="modal-api-key"></p>
-    </div>
-  </div>
-
 </body>
 </html>

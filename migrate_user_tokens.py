@@ -21,7 +21,7 @@ def migrate_user_tokens():
                 account_id INTEGER NOT NULL,
                 token TEXT NOT NULL,
                 credits INTEGER NOT NULL,
-                expiry TIMESTAMP NOT NULL,
+                expiry TEXT NOT NULL,
                 FOREIGN KEY (account_id) REFERENCES accounts(id)
             )
         """)

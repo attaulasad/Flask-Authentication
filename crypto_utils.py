@@ -1,17 +1,16 @@
-from cryptography.fernet import Fernet
 import sqlite3
 import json
-from datetime import datetime
+from cryptography.fernet import Fernet
 from log_utils import log_action
 import os
 
 # Load or generate encryption key
 try:
-    with open("secret.key", "rb") as f:
+    with open("fernet.key", "rb") as f:
         key = f.read()
 except FileNotFoundError:
     key = Fernet.generate_key()
-    with open("secret.key", "wb") as f:
+    with open("fernet.key", "wb") as f:
         f.write(key)
 
 cipher = Fernet(key)

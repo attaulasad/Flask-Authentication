@@ -1,14 +1,23 @@
+import logging
 from datetime import datetime
 
-LOG_FILE = "user_actions.log"
+# Configure logging
+logging.basicConfig(
+    filename='app_debug.log',
+    level=logging.DEBUG,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
 
-def log_action(action: str, user_data: dict, extra: str = ""):
-    timestamp = datetime.now().strftime("[%Y-%m-%d %H:%M:%S]")
-    name = user_data.get("name", "unknown")
-    credits = user_data.get("credits", "N/A")
-    expiry = user_data.get("expiry", "N/A")
-    
-    log_entry = f"{timestamp} {name} {action} – credits: {credits}, expiry: {expiry} {extra}\n"
+user_action_logger = logging.getLogger('user_actions')
+user_action_handler = logging.FileHandler('user_actions.log')
+user_action_handler.setFormatter(logging.Formatter('%(asctime)s - %(message)s'))
+user_action_logger.addHandler(user_action_handler)
+user_action_logger.setLevel(logging.INFO)
 
-    with open(LOG_FILE, "a") as f:
-        f.write(log_entry)
+def log_action(action, data, extra_info=None):
+    """Log user actions."""
+    message = f"{action} - {data}"
+    if extra_info:
+        message += f" - {extra_info}"
+    user_action_logger.info(message)
+    logging.debug(message)
