@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Dashboard</title>
+  <style>
+    :root {
+      --bg-color: #f0f2f5;
+      --card-bg: #ffffff;
+      --text-color: #333;
+      --header-color: #2c3e50;
+      --accent-color: #007bff;
+      --accent-hover: #0056b3;
+      --danger-color: #dc3545;
+      --danger-hover: #b02a37;
+      --success-color: #28a745;
+      --success-hover: #218838;
+      --border-color: #ddd;
+      --input-bg: #fafafa;
+      --note-color: #666;
+      --shadow-color: rgba(0, 0, 0, 0.05);
+    }
+
+    [data-theme="dark"] {
+      --bg-color: #1a1a1a;
+      --card-bg: #2c2c2c;
+      --text-color: #e0e0e0;
+      --header-color: #ffffff;
+      --accent-color: #4dabf7;
+      --accent-hover: #339af0;
+      --danger-color: #ff6b6b;
+      --danger-hover: #fa5252;
+      --success-color: #51cf66;
+      --success-hover: #40c057;
+      --border-color: #444;
+      --input-bg: #333;
+      --note-color: #999;
+      --shadow-color: rgba(0, 0, 0, 0.3);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Verdana, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      line-height: 1.6;
+      transition: all 0.3s ease;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .top-bar {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      display: flex;
+      gap: 15px;
+      z-index: 1000;
+    }
+
+    .theme-toggle {
+      width: 45px;
+      height: 45px;
+      background: var(--accent-color);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px var(--shadow-color);
+      transition: all 0.3s ease;
+      font-size: 20px;
+    }
+
+    .theme-toggle:hover {
+      transform: scale(1.1);
+      background: var(--accent-hover);
+    }
+
+    .logout-button {
+      padding: 12px 24px;
+      background: linear-gradient(135deg, var(--danger-color), var(--danger-hover));
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px var(--shadow-color);
+    }
+
+    .logout-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px var(--shadow-color);
+    }
+
+    h1 {
+      text-align: center;
+      color: var(--header-color);
+      margin: 30px 0;
+      font-size: 2.8rem;
+      font-weight: 700;
+      text-shadow: 2px 2px 4px var(--shadow-color);
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 30px;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    section {
+      background: linear-gradient(145deg, var(--card-bg), var(--card-bg));
+      border-radius: 20px;
+      padding: 25px;
+      box-shadow: 0 10px 30px var(--shadow-color);
+      transition: all 0.3s ease;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      min-height: 320px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    section:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 35px var(--shadow-color);
+    }
+
+    h2 {
+      font-size: 1.8rem;
+      margin-bottom: 25px;
+      color: var(--accent-color);
+      border-left: 5px solid var(--accent-color);
+      padding-left: 15px;
+      font-weight: 600;
+    }
+
+    .user-info {
+      background: var(--card-bg);
+      border-radius: 15px;
+      padding: 25px;
+      margin-bottom: 30px;
+      box-shadow: 0 10px 30px var(--shadow-color);
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .info-item {
+      padding: 15px;
+      background: rgba(0, 0, 0, 0.05);
+      border-radius: 10px;
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .info-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px var(--shadow-color);
+    }
+
+    .info-label {
+      font-size: 0.9rem;
+      color: var(--note-color);
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+
+    .info-value {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-color);
+    }
+
+    .expiry-date {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .expiry-date-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.95rem;
+      color: var(--text-color);
+    }
+
+    .expiry-date-label {
+      color: var(--note-color);
+      font-weight: 500;
+      min-width: 80px;
+    }
+
+    .expiry-date-value {
+      font-family: 'Consolas', 'Monaco', monospace;
+      background: rgba(0, 0, 0, 0.05);
+      padding: 4px 8px;
+      border-radius: 4px;
+      border: 1px solid var(--border-color);
+    }
+
+    .api-key-section {
+      background: var(--card-bg);
+      border-radius: 15px;
+      padding: 25px;
+      margin-bottom: 30px;
+      box-shadow: 0 10px 30px var(--shadow-color);
+    }
+
+    .api-key-container {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-top: 20px;
+      padding: 20px;
+      background: linear-gradient(145deg, rgba(0, 123, 255, 0.05), rgba(0, 123, 255, 0.02));
+      border-radius: 12px;
+      border: 1px solid rgba(0, 123, 255, 0.1);
+    }
+
+    .api-key-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .api-key-label {
+      font-size: 0.9rem;
+      color: var(--note-color);
+      font-weight: 500;
+    }
+
+    .api-key-value {
+      font-family: 'Consolas', 'Monaco', monospace;
+      color: var(--text-color);
+      background: rgba(0, 0, 0, 0.05);
+      padding: 12px 15px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      font-size: 0.95rem;
+      letter-spacing: 0.5px;
+      word-break: break-all;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+
+    .api-key-value:hover {
+      background: rgba(0, 0, 0, 0.08);
+      border-color: var(--accent-color);
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .action-buttons button {
+      padding: 10px 20px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      justify-content: center;
+    }
+
+    .action-buttons button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px var(--shadow-color);
+    }
+
+    .toggle-api-key {
+      background: var(--accent-color);
+      color: white;
+    }
+
+    .toggle-api-key:hover {
+      background: var(--accent-hover);
+    }
+
+    .copy-api-key {
+      background: var(--success-color);
+      color: white;
+    }
+
+    .copy-api-key:hover {
+      background: var(--success-hover);
+    }
+
+    .delete-api-key {
+      background: var(--danger-color);
+      color: white;
+    }
+
+    .delete-api-key:hover {
+      background: var(--danger-hover);
+    }
+
+    .expiry-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .expiry-group input {
+      flex: 1;
+      padding: 12px 15px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background: var(--input-bg);
+      color: var(--text-color);
+      font-size: 0.95rem;
+      transition: all 0.3s ease;
+    }
+
+    .expiry-group input:focus {
+      border-color: var(--accent-color);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+    }
+
+    .expiry-group select {
+      padding: 12px 15px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background: var(--input-bg);
+      color: var(--text-color);
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .expiry-group select:focus {
+      border-color: var(--accent-color);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+    }
+
+    .generate-key-btn {
+      width: 100%;
+      padding: 12px 20px;
+      background: var(--accent-color);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .generate-key-btn:hover {
+      background: var(--accent-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px var(--shadow-color);
+    }
+
+    .generate-key-btn:disabled {
+      background: var(--border-color);
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .history-section {
+      background: var(--card-bg);
+      border-radius: 15px;
+      padding: 25px;
+      box-shadow: 0 10px 30px var(--shadow-color);
+    }
+
+    .history-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin-top: 20px;
+    }
+
+    .history-table th {
+      background: var(--accent-color);
+      color: white;
+      padding: 15px;
+      font-weight: 600;
+      text-align: left;
+      border-radius: 8px 8px 0 0;
+    }
+
+    .history-table td {
+      padding: 15px;
+      border-bottom: 1px solid var(--border-color);
+      transition: background 0.3s ease;
+    }
+
+    .history-table tr:hover td {
+      background: rgba(0, 123, 255, 0.05);
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.6);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(5px);
+    }
+
+    .modal-content {
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 30px;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 20px 40px var(--shadow-color);
+      position: relative;
+      animation: modalSlideIn 0.3s ease;
+    }
+
+    @keyframes modalSlideIn {
+      from {
+        transform: translateY(-50px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .modal-content h3 {
+      color: var(--accent-color);
+      margin-bottom: 20px;
+      font-size: 1.5rem;
+      text-align: center;
+    }
+
+    .modal-content p {
+      background: rgba(0, 0, 0, 0.05);
+      padding: 15px;
+      border-radius: 10px;
+      word-break: break-all;
+      font-family: monospace;
+      font-size: 14px;
+      margin: 15px 0;
+      color: var(--text-color);
+    }
+
+    .close-modal-btn {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: none;
+      border: none;
+      color: var(--text-color);
+      font-size: 20px;
+      cursor: pointer;
+      padding: 5px;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: all 0.3s ease;
+    }
+
+    .close-modal-btn:hover {
+      background: rgba(0, 0, 0, 0.1);
+      color: var(--accent-color);
+    }
+
+    .flash {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 15px 25px;
+      border-radius: 10px;
+      font-weight: 500;
+      text-align: center;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateY(-20px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .flash.success {
+      background-color: rgba(40, 167, 69, 0.1);
+      color: var(--success-color);
+      border: 1px solid var(--success-color);
+    }
+
+    .flash.danger {
+      background-color: rgba(220, 53, 69, 0.1);
+      color: var(--danger-color);
+      border: 1px solid var(--danger-color);
+    }
+
+    @media (max-width: 768px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+        padding: 10px;
+      }
+
+      .info-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .action-buttons {
+        flex-direction: column;
+      }
+
+      .action-buttons button {
+        width: 100%;
+      }
+
+      .api-key-container {
+        flex-direction: column;
+      }
+
+      .history-table {
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <a href="{{ url_for('user_logout') }}" class="logout-button">Logout</a>
+    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">🌙</button>
+  </div>
+
+  <h1>User Dashboard</h1>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="flash {{ category }}" role="alert">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <div class="dashboard-grid">
+    <!-- User Info Section -->
+    <section class="user-info">
+      <h2>Account Information</h2>
+      <div class="info-grid">
+        <div class="info-item">
+          <div class="info-label">Username</div>
+          <div class="info-value">{{ user.username }}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Credits</div>
+          <div class="info-value">{{ user.credits }}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Expiry Date</div>
+          <div class="expiry-date">
+            {% set expiry_parts = user.expiry | datetimeformat | split(' ') %}
+            <div class="expiry-date-row">
+              <span class="expiry-date-label">Date:</span>
+              <span class="expiry-date-value">{{ expiry_parts[0] }}</span>
+            </div>
+            <div class="expiry-date-row">
+              <span class="expiry-date-label">Time:</span>
+              <span class="expiry-date-value">{{ expiry_parts[1] }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- API Key Section -->
+    <section class="api-key-section">
+      <h2>API Key</h2>
+      {% if user.api_key %}
+        <div class="api-key-container">
+          <div class="api-key-header">
+            <span class="api-key-label">Your API Key</span>
+          </div>
+          <div class="api-key-value" id="api-key" data-api-key="{{ user.api_key }}">
+            {{ user.api_key[:8] }}...
+          </div>
+          <div class="action-buttons">
+            <button class="toggle-api-key" onclick="showApiKey()">
+              <span>👁️</span> Show
+            </button>
+            <button class="copy-api-key" onclick="copyApiKey()">
+              <span>📋</span> Copy
+            </button>
+            <button class="delete-api-key" onclick="deleteApiKey()">
+              <span>🗑️</span> Delete
+            </button>
+          </div>
+        </div>
+      {% else %}
+        <form method="POST" action="{{ url_for('user_generate_api_key') }}" onsubmit="return handleFormSubmit(this)">
+          <div class="expiry-group">
+            <input type="number" name="expiry_value" value="365" min="1" required placeholder="Enter expiry value">
+            <select name="expiry_unit">
+              <option value="Minutes">Minutes</option>
+              <option value="Days" selected>Days</option>
+              <option value="Months">Months</option>
+            </select>
+          </div>
+          <button type="submit" class="generate-key-btn">Generate API Key</button>
+        </form>
+      {% endif %}
+    </section>
+
+    <!-- History Section -->
+    <section class="history-section">
+      <h2>Request History</h2>
+      {% if request_history %}
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Credits</th>
+              <th>Timestamp</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for entry in request_history %}
+              <tr>
+                <td>{{ entry.request_type }}</td>
+                <td>{{ entry.credits }}</td>
+                <td>{{ entry.timestamp | datetimeformat }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p>No request history found.</p>
+      {% endif %}
+    </section>
+  </div>
+
+  <!-- API Key Modal -->
+  <div id="api-key-modal" class="modal">
+    <div class="modal-content">
+      <button class="close-modal-btn" onclick="closeModal()">×</button>
+      <h3>API Key</h3>
+      <p id="modal-api-key"></p>
+    </div>
+  </div>
+
+  <script>
+    // Theme Toggle
+    function toggleTheme() {
+      const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      
+      const themeButton = document.querySelector('.theme-toggle');
+      themeButton.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+    }
+
+    // Load saved theme
+    document.addEventListener('DOMContentLoaded', () => {
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      const themeButton = document.querySelector('.theme-toggle');
+      themeButton.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+    });
+
+    // API Key Functions
+    function showApiKey() {
+      const apiKeyElement = document.getElementById('api-key');
+      if (!apiKeyElement) return;
+      
+      const modal = document.getElementById('api-key-modal');
+      const modalKey = document.getElementById('modal-api-key');
+      const apiKey = apiKeyElement.getAttribute('data-api-key');
+      
+      if (apiKey) {
+        modalKey.textContent = apiKey;
+        modal.style.display = 'flex';
+      }
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('api-key-modal');
+      modal.style.display = 'none';
+    }
+
+    function copyApiKey() {
+      const apiKeyElement = document.getElementById('api-key');
+      if (!apiKeyElement) return;
+      
+      const apiKey = apiKeyElement.getAttribute('data-api-key');
+      if (apiKey) {
+        navigator.clipboard.writeText(apiKey)
+          .then(() => {
+            alert('API key copied to clipboard!');
+          })
+          .catch(err => {
+            console.error('Failed to copy:', err);
+            alert('Failed to copy API key. Please try again.');
+          });
+      }
+    }
+
+    function deleteApiKey() {
+      if (confirm('Are you sure you want to delete your API key?')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{{ url_for("user_delete_api_key") }}';
+        document.body.appendChild(form);
+        form.submit();
+      }
+    }
+
+    // Form Handling
+    function handleFormSubmit(form) {
+      const button = form.querySelector('button[type="submit"]');
+      button.disabled = true;
+      button.textContent = 'Processing...';
+      return true;
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+      const modal = document.getElementById('api-key-modal');
+      if (event.target === modal) {
+        closeModal();
+      }
+    }
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape') {
+        closeModal();
+      }
+    });
+  </script>
+</body>
+</html>

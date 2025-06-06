@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>500 - Internal Server Error</title>
+  <style>
+    :root {
+      --bg-color: #f0f2f5;
+      --card-bg: #ffffff;
+      --text-color: #333;
+      --header-color: #2c3e50;
+      --accent-color: #007bff;
+      --accent-hover: #0056b3;
+      --border-color: #ddd;
+      --shadow-color: rgba(0, 0, 0, 0.05);
+    }
+
+    [data-theme="dark"] {
+      --bg-color: #1a1a1a;
+      --card-bg: #2c2c2c;
+      --text-color: #e0e0e0;
+      --header-color: #ffffff;
+      --accent-color: #4dabf7;
+      --accent-hover: #339af0;
+      --border-color: #444;
+      --shadow-color: rgba(0, 0, 0, 0.3);
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Verdana, sans-serif;
+      background-color: var(--bg-color);
+      margin: 0;
+      padding: 20px;
+      color: var(--text-color);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      transition: all 0.3s ease;
+    }
+
+    .container {
+      background-color: var(--card-bg);
+      border-radius: 16px;
+      padding: 40px;
+      box-shadow: 0 10px 24px var(--shadow-color);
+      text-align: center;
+      max-width: 500px;
+      width: 100%;
+    }
+
+    h1 {
+      color: var(--header-color);
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+    }
+
+    p {
+      font-size: 1.2rem;
+      margin-bottom: 30px;
+      color: var(--text-color);
+    }
+
+    a {
+      display: inline-block;
+      padding: 12px 24px;
+      font-size: 16px;
+      border-radius: 8px;
+      background: linear-gradient(to right, var(--accent-color), var(--accent-hover));
+      color: white;
+      text-decoration: none;
+      transition: background 0.3s ease;
+    }
+
+    a:hover {
+      background: linear-gradient(to right, var(--accent-hover), var(--accent-color));
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 40px;
+      height: 40px;
+      background: var(--accent-color);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 8px var(--shadow-color);
+      transition: all 0.3s ease;
+      font-size: 18px;
+    }
+
+    .theme-toggle:hover {
+      background: var(--accent-hover);
+      transform: scale(1.1);
+    }
+
+    .theme-toggle::before {
+      content: '☀️';
+    }
+
+    [data-theme="dark"] .theme-toggle::before {
+      content: '🌙';
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 20px;
+      }
+
+      h1 {
+        font-size: 2rem;
+      }
+
+      p {
+        font-size: 1rem;
+      }
+
+      a {
+        padding: 10px 20px;
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()"></button>
+  <div class="container">
+    <h1>500 - Internal Server Error</h1>
+    <p>Something went wrong on our end. Please try again later.</p>
+    <a href="{{ url_for('user_login') }}">Return to Login</a>
+  </div>
+
+  <script>
+    function toggleTheme() {
+      const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', newTheme);
+      try {
+        localStorage.setItem('theme', newTheme);
+      } catch (e) {}
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      let savedTheme = 'light';
+      try {
+        savedTheme = localStorage.getItem('theme') || 'light';
+      }
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Error</title>
+  <style>
+    :root {
+      --bg-color: #f4f6f8;
+      --card-bg: #ffffff;
+      --text-color: #555;
+      --header-color: #2c3e50;
+      --accent-color: #007bff;
+      --danger-color: #c62828;
+      --border-color: #ccc;
+      --shadow-color: rgba(0, 0, 0, 0.06);
+    }
+
+    [data-theme="dark"] {
+      --bg-color: #1a1a1a;
+      --card-bg: #2c2c2c;
+      --text-color: #e0e0e0;
+      --header-color: #ffffff;
+      --accent-color: #4dabf7;
+      --danger-color: #ff6b6b;
+      --border-color: #444;
+      --shadow-color: rgba(0, 0, 0, 0.3);
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-color);
+      margin: 0;
+      padding: 20px;
+      color: var(--text-color);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .error-container {
+      background-color: var(--card-bg);
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 6px 16px var(--shadow-color);
+      max-width: 600px;
+      width: 100%;
+      text-align: center;
+    }
+
+    h1 {
+      color: var(--header-color);
+      margin-bottom: 20px;
+      font-size: 2rem;
+    }
+
+    p {
+      color: var(--danger-color);
+      margin-bottom: 20px;
+      font-size: 1.2rem;
+    }
+
+    a {
+      color: var(--accent-color);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="error-container">
+    <h1>Error</h1>
+    <p>{{ message }}</p>
+    <a href="{{ url_for('admin_login') }}">Return to Admin Login</a>
+  </div>
+</body>
+</html>

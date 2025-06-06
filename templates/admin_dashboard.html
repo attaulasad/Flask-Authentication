@@ -1,754 +1,1124 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard</title>
-  <style>
-    :root {
-      --bg-color: #f0f2f5;
-      --card-bg: #ffffff;
-      --text-color: #333;
-      --header-color: #2c3e50;
-      --accent-color: #007bff;
-      --accent-hover: #0056b3;
-      --danger-color: #dc3545;
-      --danger-hover: #b02a37;
-      --border-color: #ddd;
-      --input-bg: #fafafa;
-      --note-color: #666;
-      --shadow-color: rgba(0, 0, 0, 0.05);
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --text-color: #1e293b;
+            --header-color: #0f172a;
+            --accent-color: #3b82f6;
+            --accent-hover: #2563eb;
+            --danger-color: #ef4444;
+            --danger-hover: #dc2626;
+            --success-color: #10b981;
+            --success-hover: #059669;
+            --border-color: rgba(0, 0, 0, 0.1);
+            --input-bg: rgba(255, 255, 255, 0.9);
+            --note-color: #64748b;
+            --shadow-color: rgba(0, 0, 0, 0.08);
+            --glass-bg: rgba(255, 255, 255, 0.3);
+            --backdrop-filter: blur(10px);
+        }
 
-    [data-theme="dark"] {
-      --bg-color: #1a1a1a;
-      --card-bg: #2c2c2c;
-      --text-color: #e0e0e0;
-      --header-color: #ffffff;
-      --accent-color: #4dabf7;
-      --accent-hover: #339af0;
-      --danger-color: #ff6b6b;
-      --danger-hover: #fa5252;
-      --border-color: #444;
-      --input-bg: #333;
-      --note-color: #999;
-      --shadow-color: rgba(0, 0, 0, 0.3);
-    }
+        [data-theme="dark"] {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.95);
+            --text-color: #f1f5f9;
+            --header-color: #f8fafc;
+            --accent-color: #60a5fa;
+            --accent-hover: #3b82f6;
+            --danger-color: #f87171;
+            --danger-hover: #ef4444;
+            --success-color: #34d399;
+            --success-hover: #10b981;
+            --border-color: rgba(255, 255, 255, 0.15);
+            --input-bg: rgba(51, 65, 85, 0.9);
+            --note-color: #94a3b8;
+            --shadow-color: rgba(0, 0, 0, 0.3);
+            --glass-bg: rgba(30, 41, 59, 0.3);
+        }
 
-    body {
-      font-family: 'Segoe UI', Tahoma, Verdana, sans-serif;
-      background-color: var(--bg-color);
-      margin: 0;
-      padding: 20px;
-      color: var(--text-color);
-      transition: all 0.3s ease;
-    }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    h1 {
-      text-align: center;
-      color: var(--header-color);
-      margin-bottom: 30px;
-      font-size: 2.8rem;
-    }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--bg-color), #e2e8f0);
+            color: var(--text-color);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 30px;
+            transition: all 0.3s ease;
+            overflow-x: hidden;
+        }
 
-    .top-bar {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
+        .top-bar {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+        }
 
-    .theme-toggle {
-      width: 40px;
-      height: 40px;
-      background: var(--accent-color);
-      color: white;
-      border: none;
-      border-radius: 50%;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 4px 8px var(--shadow-color);
-      transition: all 0.3s ease;
-      font-size: 18px;
-    }
+        .theme-toggle {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px var(--shadow-color);
+            transition: all 0.3s ease;
+            font-size: 22px;
+        }
 
-    .theme-toggle:hover {
-      background: var(--accent-hover);
-      transform: scale(1.1);
-    }
+        .theme-toggle:hover {
+            transform: rotate(15deg) scale(1.05);
+            box-shadow: 0 6px 15px var(--shadow-color);
+        }
 
-    .theme-toggle::before {
-      content: '☀️';
-    }
+        .logout-button {
+            padding: 12px 28px;
+            background: linear-gradient(135deg, var(--danger-color), var(--danger-hover));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 15px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px var(--shadow-color);
+        }
 
-    [data-theme="dark"] .theme-toggle::before {
-      content: '🌙';
-    }
+        .logout-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px var(--shadow-color);
+        }
 
-    .logout-button {
-      padding: 8px 16px;
-      font-size: 14px;
-      background: linear-gradient(to right, var(--danger-color), var(--danger-hover));
-      color: white;
-      border-radius: 8px;
-      text-decoration: none;
-      text-align: center;
-    }
+        h1 {
+            text-align: center;
+            color: var(--header-color);
+            margin: 40px 0;
+            font-size: 3rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, var(--header-color), var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 1px 1px 3px var(--shadow-color);
+        }
 
-    .logout-button:hover {
-      background: linear-gradient(to right, var(--danger-hover), var(--danger-color));
-    }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+            gap: 30px;
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 20px;
+        }
 
-    .dashboard-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 24px;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
+        section {
+            background: var(--card-bg);
+            backdrop-filter: var(--backdrop-filter);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 8px 24px var(--shadow-color);
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-color);
+            min-height: 340px;
+            display: flex;
+            flex-direction: column;
+        }
 
-    .api-section-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 24px;
-      max-width: 1200px;
-      margin: 30px auto;
-    }
+        section:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 32px var(--shadow-color);
+        }
 
-    section {
-      background-color: var(--card-bg);
-      border-radius: 16px;
-      padding: 24px;
-      box-shadow: 0 10px 24px var(--shadow-color);
-      transition: transform 0.3s ease;
-      min-height: 320px;
-      display: flex;
-      flex-direction: column;
-    }
+        h2 {
+            font-size: 1.9rem;
+            margin-bottom: 20px;
+            color: var(--accent-color);
+            font-weight: 600;
+            position: relative;
+            padding-bottom: 10px;
+        }
 
-    section:hover {
-      transform: translateY(-4px);
-    }
+        h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-color), transparent);
+        }
 
-    h2 {
-      font-size: 1.6rem;
-      margin-bottom: 18px;
-      color: var(--accent-color);
-      border-left: 5px solid var(--accent-color);
-      padding-left: 12px;
-    }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            flex-grow: 1;
+        }
 
-    form {
-      flex-grow: 1;
-      display: flex;
-      flex-direction: column;
-    }
+        label {
+            font-weight: 600;
+            color: var(--text-color);
+            font-size: 14px;
+            margin-bottom: 6px;
+        }
 
-    .expiry-group {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 15px;
+            background: var(--input-bg);
+            color: var(--text-color);
+            transition: all 0.3s ease;
+            box-shadow: inset 0 1px 3px var(--shadow-color);
+        }
 
-    .expiry-group input,
-    .expiry-group select {
-      flex: 1;
-    }
+        input:focus,
+        select:focus {
+            border-color: var(--accent-color);
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
 
-    form label {
-      display: block;
-      margin-bottom: 6px;
-      font-weight: 600;
-      color: var(--text-color);
-    }
+        .expiry-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            align-items: center;
+        }
 
-    input[type="text"],
-    input[type="password"],
-    input[type="number"],
-    select {
-      width: 100%;
-      box-sizing: border-box;
-      padding: 12px 14px;
-      margin-bottom: 16px;
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      font-size: 15px;
-      background-color: var(--input-bg);
-      color: var(--text-color);
-      transition: border-color 0.3s ease;
-    }
+        button {
+            width: 100%;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: auto;
+            position: relative;
+            overflow: hidden;
+        }
 
-    input:focus, select:focus {
-      border-color: var(--accent-color);
-      outline: none;
-    }
+        button::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.4s ease, height 0.4s ease;
+        }
 
-    button {
-      width: 100%;
-      padding: 12px;
-      font-size: 16px;
-      border-radius: 8px;
-      border: none;
-      background: linear-gradient(to right, var(--accent-color), var(--accent-hover));
-      color: white;
-      cursor: pointer;
-      transition: background 0.3s ease;
-      position: relative;
-      margin-top: auto;
-    }
+        button:hover:not(:disabled)::after {
+            width: 300px;
+            height: 300px;
+        }
 
-    button:disabled {
-      background: #6c757d;
-      cursor: not-allowed;
-    }
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px var(--shadow-color);
+        }
 
-    button:hover:not(:disabled) {
-      background: linear-gradient(to right, var(--accent-hover), var(--accent-color));
-    }
+        button:disabled {
+            background: #6b7280;
+            cursor: not-allowed;
+            transform: none;
+        }
 
-    .flash {
-      margin: 20px auto;
-      max-width: 800px;
-      padding: 15px 25px;
-      border-radius: 10px;
-      font-weight: 500;
-    }
+        .flash {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px 30px;
+            border-radius: 12px;
+            font-weight: 500;
+            box-shadow: 0 6px 16px var(--shadow-color);
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            animation: slideIn 0.3s ease;
+            overflow: hidden;
+            background-clip: padding-box;
+            -webkit-background-clip: padding-box;
+        }
 
-    .flash.success {
-      background-color: #e9f7ef;
-      color: #2e7d32;
-      border: 1px solid #c8e6c9;
-    }
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
 
-    .flash.danger {
-      background-color: #fbe9e7;
-      color: #d32f2f;
-      border: 1px solid #ef5350;
-    }
+        .flash::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-color), var(--accent-hover));
+            animation: progress 10s linear forwards;
+        }
 
-    .flash.info {
-      background-color: #e1f5fe;
-      color: #0277bd;
-      border: 1px solid #4fc3f7;
-    }
+        .flash.status::after {
+            animation: progress 20s linear forwards;
+        }
 
-    .note {
-      margin-bottom: 12px;
-      color: var(--note-color);
-      font-size: 14px;
-      font-style: italic;
-    }
+        @keyframes progress {
+            from { width: 100%; }
+            to { width: 0; }
+        }
 
-    .api-keys-table-container {
-      max-height: 400px;
-      overflow-y: auto;
-      margin: 16px 0;
-      position: relative;
-    }
+        .flash.success {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(52, 211, 153, 0.1));
+            color: var(--success-color);
+            border: 1px solid var(--success-color);
+        }
 
-    .api-keys-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-    }
+        .flash.success::before {
+            content: '✅';
+            font-size: 24px;
+        }
 
-    .api-keys-table th,
-    .api-keys-table td {
-      padding: 12px;
-      text-align: left;
-      border-bottom: 1px solid var(--border-color);
-    }
+        .flash.danger {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(248, 113, 113, 0.1));
+            color: var(--danger-color);
+            border: 1px solid var(--danger-color);
+        }
 
-    .api-keys-table th {
-      background-color: var(--input-bg);
-      color: var(--text-color);
-      font-weight: 600;
-      position: sticky;
-      top: 0;
-      z-index: 1;
-    }
+        .flash.danger::before {
+            content: '⚠️';
+            font-size: 24px;
+        }
 
-    [data-theme="dark"] .api-keys-table th {
-      color: var(--accent-color);
-    }
+        .status-line {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
 
-    .api-keys-table td {
-      color: var(--text-color);
-    }
+        .status-line:last-child {
+            border-bottom: none;
+        }
 
-    .api-key-hidden {
-      font-family: monospace;
-      color: var(--note-color);
-      display: inline-block;
-      max-width: 150px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
+        .status-label {
+            font-weight: 600;
+            color: var(--accent-color);
+            min-width: 120px;
+            font-size: 14px;
+        }
 
-    .action-buttons {
-      display: flex;
-      gap: 8px;
-    }
+        .status-value {
+            color: var(--text-color);
+            font-family: 'Consolas', 'Monaco', monospace;
+            background: var(--input-bg);
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            flex-grow: 1;
+            font-size: 14px;
+        }
 
-    .toggle-api-key, .copy-api-key, .delete-api-key {
-      background: none;
-      border: none;
-      color: var(--accent-color);
-      cursor: pointer;
-      font-size: 12px;
-      padding: 6px 12px;
-      border-radius: 4px;
-      transition: background 0.2s ease;
-    }
+        .note {
+            color: var(--note-color);
+            font-size: 13px;
+            font-style: italic;
+            margin-bottom: 20px;
+        }
 
-    .toggle-api-key:hover, .copy-api-key:hover, .delete-api-key:hover {
-      background: rgba(0, 123, 255, 0.1);
-    }
+        .api-section-grid {
+            max-width: 1440px;
+            margin: 40px auto;
+            padding: 20px;
+        }
 
-    .delete-api-key {
-      color: var(--danger-color);
-    }
+        .api-keys-table-container {
+            background: var(--card-bg);
+            backdrop-filter: var(--backdrop-filter);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 8px 24px var(--shadow-color);
+            margin-top: 20px;
+            overflow-x: auto;
+        }
 
-    .delete-api-key:hover {
-      background: rgba(220, 53, 69, 0.1);
-      color: var(--danger-hover);
-    }
+        .search-container {
+            margin-bottom: 25px;
+            position: relative;
+        }
 
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.6);
-      z-index: 1000;
-      align-items: center;
-      justify-content: center;
-    }
+        .search-container input {
+            width: 100%;
+            padding: 14px 20px 14px 40px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 15px;
+            background: var(--input-bg);
+            color: var(--text-color);
+            transition: all 0.3s ease;
+            box-shadow: inset 0 1px 3px var(--shadow-color);
+        }
 
-    .modal-content {
-      background-color: var(--card-bg);
-      padding: 24px;
-      border-radius: 8px;
-      max-width: 400px;
-      width: 90%;
-      text-align: center;
-      position: relative;
-      box-shadow: 0 4px 16px var(--shadow-color);
-    }
+        .search-container input:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
 
-    .modal-content p {
-      margin: 15px 0;
-      font-family: monospace;
-      word-break: break-all;
-      color: var(--text-color);
-      font-size: 14px;
-    }
+        .search-container::before {
+            content: '🔍';
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--note-color);
+            font-size: 18px;
+        }
 
-    .close-modal {
-      position: absolute;
-      top: 12px;
-      right: 16px;
-      background: none;
-      border: none;
-      font-size: 14px;
-      cursor: pointer;
-      color: var(--text-color);
-      padding: 4px;
-      width: 24px;
-      height: 24px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 50%;
-    }
+        .api-keys-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin: 15px 0;
+            font-size: 14px;
+        }
 
-    .close-modal:hover {
-      background-color: transparent;
-      color: var(--accent-color);
-    }
+        .api-keys-table th {
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
+            color: white;
+            padding: 16px;
+            font-weight: 600;
+            text-align: left;
+            border-radius: 8px 8px 0 0;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
 
-    .search-container {
-      margin-bottom: 16px;
-    }
+        .api-keys-table td {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
 
-    .search-container input {
-      width: 100%;
-      padding: 10px;
-      font-size: 14px;
-    }
+        .api-keys-table tr {
+            background: linear-gradient(90deg, rgba(59, 130, 246, 0.02), transparent);
+        }
 
-    @media (max-width: 600px) {
-      section {
-        padding: 18px;
-        min-height: 280px;
-      }
+        .api-keys-table tr:hover td {
+            background: rgba(59, 130, 246, 0.1);
+            transform: translateX(5px);
+        }
 
-      h1 {
-        font-size: 2rem;
-      }
+        .api-key-hidden {
+            font-family: 'Consolas', 'Monaco', monospace;
+            color: var(--text-color);
+            display: inline-block;
+            max-width: 180px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            background: var(--input-bg);
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
 
-      h2 {
-        font-size: 1.4rem;
-      }
+        .credits-badge, .expiry-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
 
-      .api-section-grid {
-        grid-template-columns: 1fr;
-      }
+        .credits-badge {
+            background: linear-gradient(135deg, #facc15, #eab308);
+            color: #1a252f;
+        }
 
-      .api-keys-table {
-        font-size: 12px;
-      }
+        .expiry-badge {
+            background: linear-gradient(135deg, #a78bfa, #7c3aed);
+            color: white;
+        }
 
-      .api-keys-table th, .api-keys-table td {
-        padding: 8px;
-      }
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            justify-content: flex-start;
+        }
 
-      .api-key-hidden {
-        max-width: 100px;
-      }
+        .action-btn {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            border: none;
+            background: none;
+            cursor: pointer;
+        }
 
-      .action-buttons {
-        flex-wrap: wrap;
-      }
-    }
-  </style>
+        .show-btn {
+            color: #2563eb;
+        }
+
+        .show-btn:hover {
+            color: #1d4ed8;
+            background-color: rgba(37, 99, 235, 0.1);
+        }
+
+        .copy-btn {
+            color: #059669;
+        }
+
+        .copy-btn:hover {
+            color: #047857;
+            background-color: rgba(5, 150, 105, 0.1);
+        }
+
+        .delete-btn {
+            color: #dc2626;
+        }
+
+        .delete-btn:hover {
+            color: #b91c1c;
+            background-color: rgba(220, 38, 38, 0.1);
+        }
+
+        .delete-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .toggle-api-key {
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
+        }
+
+        .toggle-api-key:hover:not(:disabled) {
+            background: linear-gradient(135deg, var(--accent-hover), var(--accent-color));
+        }
+
+        .copy-api-key {
+            background: linear-gradient(135deg, var(--success-color), var(--success-hover));
+        }
+
+        .copy-api-key:hover:not(:disabled) {
+            background: linear-gradient(135deg, var(--success-hover), var(--success-color));
+        }
+
+        .delete-api-key {
+            background: linear-gradient(135deg, var(--danger-color), var(--danger-hover));
+        }
+
+        .delete-api-key:hover:not(:disabled) {
+            background: linear-gradient(135deg, var(--danger-hover), var(--danger-color));
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(8px);
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            backdrop-filter: var(--backdrop-filter);
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 550px;
+            width: 90%;
+            box-shadow: 0 12px 32px var(--shadow-color);
+            position: relative;
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-content h3 {
+            color: var(--accent-color);
+            margin-bottom: 20px;
+            font-size: 1.6rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .modal-content p {
+            background: var(--input-bg);
+            padding: 16px;
+            border-radius: 8px;
+            word-break: break-all;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            margin: 15px 0;
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+        }
+
+        .close-modal-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 8px;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .close-modal-btn:hover {
+            background: rgba(0, 0, 0, 0.1);
+            color: var(--accent-color);
+            transform: rotate(90deg);
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 2.2rem;
+                margin: 30px 0;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                padding: 10px;
+            }
+
+            section {
+                min-height: auto;
+                padding: 20px;
+            }
+
+            .top-bar {
+                position: static;
+                justify-content: center;
+                margin-bottom: 20px;
+                flex-wrap: wrap;
+            }
+
+            .api-keys-table {
+                font-size: 13px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .action-buttons button {
+                width: 100%;
+            }
+
+            .expiry-group {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="top-bar">
-    <a href="{{ url_for('logout') }}" class="logout-button" aria-label="Log out">Logout</a>
-    <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()"></button>
-  </div>
-  <h1>Admin Dashboard</h1>
-
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      {% for category, message in messages %}
-        <div class="flash {{ category }}" role="alert">{{ message | safe }}</div>
-      {% endfor %}
-    {% endif %}
-  {% endwith %}
-
-  <div class="dashboard-grid">
-    <section aria-labelledby="create-user">
-      <h2 id="create-user">Create User</h2>
-      <form method="POST" action="{{ url_for('create_user_form') }}" onsubmit="handleFormSubmit(this)">
-        <label for="username">Email</label>
-        <input type="text" name="username" id="username" placeholder="Enter email" required aria-required="true">
-
-        <label for="password">Password</label>
-        <input type="password" name="password" id="password" placeholder="Enter password" required aria-required="true">
-
-        <label for="credits">Credits</label>
-        <input type="number" name="credits" id="credits" value="10" min="1" required aria-required="true">
-
-        <label for="expiry_value">Expiry</label>
-        <div class="expiry-group">
-          <input type="number" name="expiry_value" id="expiry_value" value="365" min="1" placeholder="Enter expiry value" required aria-required="true">
-          <select name="expiry_unit" id="expiry_unit">
-            <option value="Minutes">Minutes</option>
-            <option value="Days" selected>Days</option>
-            <option value="Months">Months</option>
-          </select>
-        </div>
-
-        <button type="submit">Create User</button>
-      </form>
-    </section>
-
-    <section aria-labelledby="generate-api-key">
-      <h2 id="generate-api-key">Generate API Key</h2>
-      <p class="note"><strong>Note:</strong> Users can have only one API key at a time.</p>
-      <form method="POST" action="{{ url_for('generate_api_key_form') }}" onsubmit="handleFormSubmit(this)">
-        <label for="account_id_generate">Select User</label>
-        <select name="account_id" id="account_id_generate" required aria-required="true">
-          <option value="" disabled selected>Select a user</option>
-          {% if users %}
-            {% for user in users %}
-              <option value="{{ user.id }}">{{ user.username }}</option>
-            {% endfor %}
-          {% else %}
-            <option value="" disabled>No users found</option>
-          {% endif %}
-        </select>
-
-        <button type="submit">Generate API Key</button>
-      </form>
-    </section>
-
-    <section aria-labelledby="refill-credits">
-      <h2 id="refill-credits">Refill Credits</h2>
-      <form method="POST" action="{{ url_for('refill_credits_form') }}" onsubmit="handleFormSubmit(this)">
-        <label for="account_id_credits">Select User</label>
-        <select name="account_id" id="account_id_credits" required aria-required="true">
-          <option value="" disabled selected>Select a user</option>
-          {% if users %}
-            {% for user in users %}
-              <option value="{{ user.id }}">{{ user.username }}</option>
-            {% endfor %}
-          {% else %}
-            <option value="" disabled>No users found</option>
-          {% endif %}
-        </select>
-
-        <label for="add_credits">Add Credits</label>
-        <input type="number" name="add_credits" id="add_credits" value="10" min="1" required aria-required="true">
-
-        <button type="submit">Refill Credits</button>
-      </form>
-    </section>
-
-    <section aria-labelledby="extend-time">
-      <h2 id="extend-time">Extend Time</h2>
-      <form method="POST" action="{{ url_for('extend_time_form') }}" onsubmit="handleFormSubmit(this)">
-        <label for="account_id_time">Select User</label>
-        <select name="account_id" id="account_id_time" required aria-required="true">
-          <option value="" disabled selected>Select a user</option>
-          {% if users %}
-            {% for user in users %}
-              <option value="{{ user.id }}">{{ user.username }}</option>
-            {% endfor %}
-          {% else %}
-            <option value="" disabled>No users found</option>
-          {% endif %}
-        </select>
-
-        <label for="add_minutes">Add Time</label>
-        <div class="expiry-group">
-          <input type="number" name="add_minutes" id="add_minutes" value="30" min="1" required aria-required="true">
-          <select name="add_unit" id="add_unit">
-            <option value="Minutes">Minutes</option>
-            <option value="Days" selected>Days</option>
-            <option value="Months">Months</option>
-          </select>
-        </div>
-
-        <button type="submit">Extend Time</button>
-      </form>
-    </section>
-
-    <section aria-labelledby="check-status">
-      <h2 id="check-status">Check User Status</h2>
-      <form method="POST" action="{{ url_for('check_user_status_form') }}" onsubmit="handleFormSubmit(this)">
-        <label for="account_id_status">Select User</label>
-        <select name="account_id" id="account_id_status" required aria-required="true">
-          <option value="" disabled selected>Select a user</option>
-          {% if users %}
-            {% for user in users %}
-              <option value="{{ user.id }}">{{ user.username }}</option>
-            {% endfor %}
-          {% else %}
-            <option value="" disabled>No users found</option>
-          {% endif %}
-        </select>
-        <button type="submit">Check Status</button>
-      </form>
-    </section>
-
-    <section aria-labelledby="delete-user">
-      <h2 id="delete-user">Delete User</h2>
-      <form id="delete-user-form" method="POST" action="{{ url_for('delete_user_form') }}" onsubmit="return handleDeleteForm(event)">
-        <label for="account_id_delete">Select User</label>
-        <select name="account_id" id="account_id_delete" required aria-required="true">
-          <option value="" disabled selected>Choose an option...</option>
-          <option value="delete_all">Delete All Users</option>
-          {% if users %}
-            {% for user in users %}
-              <option value="{{ user.id }}">{{ user.username }}</option>
-            {% endfor %}
-          {% else %}
-            <option value="" disabled>No users found</option>
-          {% endif %}
-        </select>
-        <button type="submit">Delete User</button>
-      </form>
-    </section>
-  </div>
-
-  <div class="api-section-grid">
-    <section aria-labelledby="active-api-keys">
-      <h2 id="active-api-keys">Active API Keys</h2>
-      <div class="search-container">
-        <input type="text" id="api-key-search" placeholder="Search API keys by username..." oninput="filterApiKeys()">
-      </div>
-      <div class="api-keys-table-container">
-        {% if active_api_keys %}
-          <table class="api-keys-table" aria-describedby="active-api-keys">
-            <thead>
-              <tr>
-                <th scope="col">User</th>
-                <th scope="col">Key</th>
-                <th scope="col">Credits</th>
-                <th scope="col">Token</th>
-                <th scope="col">Expiry</th>
-                <th scope="col">Actions</th>
-              </tr>
-            </thead>
-            <tbody id="api-keys-tbody">
-              {% for key in active_api_keys %}
-                <tr class="api-key-row">
-                  <td>{{ key.username }}</td>
-                  <td>
-                    <span class="api-key-hidden" id="api-key-{{ key.api_key_id }}" data-api-key="{{ key.api_key }}">{{ key.api_key[:8] }}...</span>
-                  </td>
-                  <td>{{ key.credits }}</td>
-                  <td>{{ key.token[:8] }}...</td>
-                  <td>{{ key.expiry }}</td>
-                  <td class="action-buttons">
-                    <button class="toggle-api-key" onclick="showApiKey('api-key-{{ key.api_key_id }}')" aria-label="Show API key for {{ key.username }}">Show</button>
-                    <button class="copy-api-key" onclick="copyApiKey('api-key-{{ key.api_key_id }}')" aria-label="Copy API key for {{ key.username }}">Copy</button>
-                    <button class="delete-api-key" onclick="deleteApiKey('{{ key.api_key_id }}')" aria-label="Delete API key for {{ key.username }}">Delete</button>
-                  </td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        {% else %}
-          <p>No active API keys found.</p>
-        {% endif %}
-      </div>
-    </section>
-  </div>
-
-  <div id="api-key-modal" class="modal" role="dialog" aria-labelledby="modal-title">
-    <div class="modal-content">
-      <button class="close-modal" onclick="closeModal()" aria-label="Close modal">✕</button>
-      <h3 id="modal-title">API Key</h3>
-      <p id="modal-api-key"></p>
+    <div class="top-bar">
+        <a href="{{ url_for('admin_logout') }}" class="logout-button">Logout</a>
+        <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">🌙</button>
     </div>
-  </div>
 
-  <script>
-    function toggleTheme() {
-      console.log('Toggling theme');
-      const currentTheme = document.documentElement.getAttribute('data-theme');
-      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', newTheme);
-      localStorage.setItem('theme', newTheme);
-      console.log('Theme set to:', newTheme);
-    }
+    <h1>Admin Dashboard</h1>
 
-    function showApiKey(id) {
-      console.log('Showing API key for ID:', id);
-      const apiKeyElement = document.getElementById(id);
-      const modal = document.getElementById('api-key-modal');
-      const modalKey = document.getElementById('modal-api-key');
-      modalKey.textContent = apiKeyElement.dataset.apiKey;
-      modal.style.display = 'flex';
-    }
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash {{ category }}" role="alert">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
 
-    function closeModal() {
-      console.log('Closing modal');
-      const modal = document.getElementById('api-key-modal');
-      modal.style.display = 'none';
-    }
+    <div class="dashboard-grid">
+        <!-- Create User Section -->
+        <section>
+            <h2>Create User</h2>
+            <form method="POST" action="{{ url_for('create_user_form') }}" onsubmit="return handleFormSubmit(this)">
+                <div>
+                    <label for="username">Email</label>
+                    <input type="email" id="username" name="username" required placeholder="Enter email">
+                </div>
+                <div>
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required placeholder="Enter password">
+                </div>
+                <div>
+                    <label for="credits">Credits</label>
+                    <input type="number" id="credits" name="credits" value="{{ bonus_credits }}" min="0" required placeholder="Enter credits">
+                </div>
+                <button type="submit">Create User</button>
+            </form>
+        </section>
 
-    function copyApiKey(id) {
-      console.log('Copying API key for ID:', id);
-      const apiKeyElement = document.getElementById(id);
-      const apiKey = apiKeyElement.dataset.apiKey;
-      navigator.clipboard.writeText(apiKey).then(() => {
-        alert('API key copied to clipboard!');
-        console.log('API key copied successfully');
-      }).catch(err => {
-        console.error('Failed to copy API key:', err);
-        alert('Failed to copy API key: ' + err.message);
-      });
-    }
+        <!-- Generate API Key Section -->
+        <section>
+            <h2>Generate API Key</h2>
+            <form method="POST" action="{{ url_for('generate_api_key_form') }}" onsubmit="return handleFormSubmit(this)">
+                <div>
+                    <label for="account_id">User</label>
+                    <select id="account_id" name="account_id" required>
+                        <option value="">Select User</option>
+                        {% for user in users %}
+                            <option value="{{ user.id }}">{{ user.username }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="expiry-group">
+                    <div>
+                        <label for="expiry_value">Expiry Value</label>
+                        <input type="number" id="expiry_value" name="expiry_value" value="365" min="1" required placeholder="Enter value">
+                    </div>
+                    <div>
+                        <label for="expiry_unit">Unit</label>
+                        <select id="expiry_unit" name="expiry_unit">
+                            <option value="Minutes">Minutes</option>
+                            <option value="Days" selected>Days</option>
+                            <option value="Months">Months</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit">Generate API Key</button>
+            </form>
+        </section>
 
-    function deleteApiKey(apiKeyId) {
-      console.log('Attempting to delete API key ID:', apiKeyId);
-      if (confirm('Are you sure you want to delete this API key?')) {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '{{ url_for("delete_api_key_form") }}';
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = 'api_key_id';
-        input.value = apiKeyId;
-        form.appendChild(input);
-        document.body.appendChild(form);
-        console.log('Submitting delete API key form');
-        form.submit();
-      } else {
-        console.log('API key deletion cancelled');
-      }
-    }
+        <!-- Refill Credits Section -->
+        <section>
+            <h2>Refill Credits</h2>
+            <form method="POST" action="{{ url_for('refill_credits_form') }}" onsubmit="return handleFormSubmit(this)">
+                <div>
+                    <label for="refill_account_id">User</label>
+                    <select id="refill_account_id" name="account_id" required>
+                        <option value="">Select User</option>
+                        {% for user in users %}
+                            <option value="{{ user.id }}">{{ user.username }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label for="add_credits">Credits to Add</label>
+                    <input type="number" id="add_credits" name="add_credits" min="1" required placeholder="Enter credits">
+                </div>
+                <button type="submit">Add Credits</button>
+            </form>
+        </section>
 
-    function filterApiKeys() {
-      const searchInput = document.getElementById('api-key-search').value.toLowerCase();
-      const rows = document.querySelectorAll('.api-key-row');
-      rows.forEach(row => {
-        const username = row.cells[0].textContent.toLowerCase();
-        row.style.display = username.includes(searchInput) ? '' : 'none';
-      });
-    }
+        <!-- Extend Time Section -->
+        <section>
+            <h2>Extend Time</h2>
+            <form method="POST" action="{{ url_for('extend_time_form') }}" onsubmit="return handleFormSubmit(this)">
+                <div>
+                    <label for="extend_account_id">User</label>
+                    <select id="extend_account_id" name="account_id" required>
+                        <option value="">Select User</option>
+                        {% for user in users %}
+                            <option value="{{ user.id }}">{{ user.username }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="expiry-group">
+                    <div>
+                        <label for="add_value">Time to Add</label>
+                        <input type="number" id="add_value" name="add_value" min="1" required placeholder="Enter value">
+                    </div>
+                    <div>
+                        <label for="add_unit">Unit</label>
+                        <select id="add_unit" name="add_unit">
+                            <option value="Minutes">Minutes</option>
+                            <option value="Days" selected>Days</option>
+                            <option value="Months">Months</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit">Extend Time</button>
+            </form>
+        </section>
 
-    function handleDeleteForm(event) {
-      event.preventDefault();
-      const form = event.target;
-      const accountId = form.querySelector('select[name="account_id"]').value;
-      console.log('Delete user form submitted with account_id:', accountId);
-      if (!accountId) {
-        alert('Please select an option to delete.');
-        console.log('No account_id selected');
-        return false;
-      }
-      const confirmMessage = accountId === 'delete_all'
-        ? 'Are you sure you want to delete ALL users and their associated data? This action cannot be undone.'
-        : 'Are you sure you want to delete this user?';
-      if (confirm(confirmMessage)) {
-        console.log('User confirmed deletion for account_id:', accountId);
-        form.submit();
-        return true;
-      } else {
-        console.log('User deletion cancelled');
-        return false;
-      }
-    }
+        <!-- Check User Status Section -->
+        <section>
+            <h2>Check User Status</h2>
+            <form method="POST" action="{{ url_for('check_user_status_form') }}">
+                <div>
+                    <label for="status_account_id">User</label>
+                    <select id="status_account_id" name="account_id" required>
+                        <option value="">Select User</option>
+                        {% for user in users %}
+                            <option value="{{ user.id }}">{{ user.username }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit">Check Status</button>
+            </form>
+        </section>
 
-    function handleFormSubmit(form) {
-      console.log('Submitting form:', form.action);
-      const button = form.querySelector('button[type="submit"]');
-      button.disabled = true;
-      button.textContent = 'Processing...';
-      form.addEventListener('submit', () => {
-        setTimeout(() => {
-          button.disabled = false;
-          button.textContent = button.dataset.originalText || 'Submit';
-        }, 5000);
-      }, { once: true });
-    }
+        <!-- Delete User Section -->
+        <section>
+            <h2>Delete User</h2>
+            <form method="POST" action="{{ url_for('delete_user_form') }}" onsubmit="return handleFormSubmit(this)">
+                <div>
+                    <label for="delete_account_id">User</label>
+                    <select id="delete_account_id" name="account_id" required>
+                        <option value="">Select User</option>
+                        {% for user in users %}
+                            <option value="{{ user.id }}">{{ user.username }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="delete-button">Delete User</button>
+            </form>
+        </section>
+    </div>
 
-    document.addEventListener('DOMContentLoaded', () => {
-      console.log('DOM loaded');
-      const savedTheme = localStorage.getItem('theme') || 'light';
-      document.documentElement.setAttribute('data-theme', savedTheme);
-      console.log('Initial theme:', savedTheme);
+    <!-- API Keys Section -->
+    <div class="api-section-grid">
+        <section>
+            <h2>Active API Keys</h2>
+            <div class="search-container">
+                <input type="text" id="api-key-search" placeholder="Search API keys..." oninput="filterApiKeys()">
+            </div>
+            <div class="api-keys-table-container">
+                {% if active_api_keys %}
+                <table class="api-keys-table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>API Key</th>
+                            <th>Credits</th>
+                            <th>Expiry</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="api-keys-tbody">
+                        {% for key in active_api_keys %}
+                        <tr class="api-key-row" data-api-key-id="{{ key.id }}">
+                            <td>{{ key.username }}</td>
+                            <td>
+                                <span class="api-key-hidden" id="api-key-{{ loop.index }}" data-api-key="{{ key.api_key }}">
+                                    {{ key.api_key[:8] if key.api_key != 'No API Key' else 'N/A' }}...
+                                </span>
+                            </td>
+                            <td><span class="credits-badge">{{ key.credits }}</span></td>
+                            <td><span class="expiry-badge">{{ key.expiry | datetimeformat }}</span></td>
+                            <td class="action-buttons">
+                                <button onclick="showApiKey('{{ loop.index0 }}')" class="action-btn show-btn">
+                                    <span>👁️</span> Show
+                                </button>
+                                <button onclick="copyApiKey('{{ loop.index0 }}')" class="action-btn copy-btn">
+                                    <span>📋</span> Copy
+                                </button>
+                                <form method="POST" action="{{ url_for('delete_api_key_form') }}" style="display: inline;">
+                                    <input type="hidden" name="api_key_id" value="{{ key.api_key_id }}">
+                                    <button type="submit" class="action-btn delete-btn" onclick="return confirm('Are you sure you want to delete this API key?')" {% if key.api_key == 'No API Key' %}disabled{% endif %}>
+                                        <span>🗑️</span> Delete
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p>No active API keys found.</p>
+                {% endif %}
+            </div>
+        </section>
+    </div>
 
-      const modal = document.getElementById('api-key-modal');
-      modal.addEventListener('click', function(event) {
-        if (event.target === modal) {
-          closeModal();
+    <!-- API Key Modal -->
+    <div id="api-key-modal" class="modal">
+        <div class="modal-content">
+            <button class="close-modal-btn" onclick="closeModal()">×</button>
+            <h3>API Key</h3>
+            <p id="modal-api-key"></p>
+        </div>
+    </div>
+
+    <script>
+        // Theme Toggle
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            const themeButton = document.querySelector('.theme-toggle');
+            themeButton.textContent = newTheme === 'dark' ? '☀️' : '🌙';
         }
-      });
 
-      document.querySelectorAll('button[type="submit"]').forEach(button => {
-        button.dataset.originalText = button.textContent;
-      });
+        // Load saved theme
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            const themeButton = document.querySelector('.theme-toggle');
+            themeButton.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
 
-      document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape' && modal.style.display === 'flex') {
-          closeModal();
+            // Handle existing flash messages on page load
+            document.querySelectorAll('.flash').forEach(flash => {
+                const isStatus = flash.classList.contains('status');
+                const duration = isStatus ? 20000 : 10000;
+                setTimeout(() => {
+                    flash.style.opacity = '0';
+                    flash.style.transform = 'translateY(-20px)';
+                    setTimeout(() => flash.remove(), 300);
+                }, duration);
+            });
+        });
+
+        // API Key Functions
+        function showApiKey(index) {
+            const apiKeyElement = document.getElementById('api-key-' + index);
+            if (!apiKeyElement) {
+                alert('Error: API key element not found.');
+                return;
+            }
+            
+            const modal = document.getElementById('api-key-modal');
+            const modalKey = document.getElementById('modal-api-key');
+            const apiKey = apiKeyElement.getAttribute('data-api-key');
+            
+            if (apiKey && apiKey !== 'No API Key') {
+                modalKey.textContent = apiKey;
+                modal.style.display = 'flex';
+            } else {
+                alert('No valid API key to show.');
+            }
         }
-      });
-    });
-  </script>
+
+        function closeModal() {
+            const modal = document.getElementById('api-key-modal');
+            modal.style.display = 'none';
+        }
+
+        function copyApiKey(index) {
+            const apiKeyElement = document.getElementById('api-key-' + index);
+            if (!apiKeyElement) {
+                alert('Error: API key element not found.');
+                return;
+            }
+            
+            const apiKey = apiKeyElement.getAttribute('data-api-key');
+            if (apiKey && apiKey !== 'No API Key') {
+                navigator.clipboard.writeText(apiKey)
+                    .then(() => {
+                        alert('API key copied to clipboard!');
+                    })
+                    .catch(err => {
+                        console.error('Failed to copy:', err);
+                        alert('Failed to copy API key. Please try again.');
+                    });
+            } else {
+                alert('No valid API key to copy.');
+            }
+        }
+
+        function deleteApiKey(apiKeyId) {
+            if (!apiKeyId) {
+                alert('No valid API key to delete.');
+                return;
+            }
+            
+            if (confirm('Are you sure you want to delete this API key?')) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '{{ url_for("delete_api_key_form") }}';
+                
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'api_key_id';
+                input.value = apiKeyId;
+                
+                form.appendChild(input);
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
+        // Search Function
+        function filterApiKeys() {
+            const searchInput = document.getElementById('api-key-search').value.toLowerCase();
+            const rows = document.querySelectorAll('.api-key-row');
+            
+            rows.forEach(row => {
+                const username = row.cells[0].textContent.toLowerCase();
+                row.style.display = username.includes(searchInput) ? '' : 'none';
+            });
+        }
+
+        // Form Handling
+        function handleFormSubmit(form) {
+            if (form.action === '{{ url_for("check_user_status_form") }}') {
+                return true;
+            }
+            const button = form.querySelector('button[type="submit"]');
+            button.disabled = true;
+            button.textContent = 'Processing...';
+            return true;
+        }
+
+        // Modify the form submission to handle status display
+        document.querySelector('form[action="{{ url_for("check_user_status_form") }}"]').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const form = this;
+            const button = form.querySelector('button[type="submit"]');
+            
+            button.disabled = true;
+            
+            const formData = new FormData(form);
+            
+            fetch(form.action, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const flashMessage = doc.querySelector('.flash.success');
+                
+                if (flashMessage) {
+                    const message = flashMessage.textContent;
+                    const match = message.match(/User Status: (.*), Credits: (.*), Expiry: (.*)/);
+                    
+                    if (match) {
+                        const [, email, credits, expiry] = match;
+                        const formattedExpiry = new Date(expiry).toLocaleString();
+                        
+                        // Create formatted status display
+                        const statusHtml = `
+                            <div class="status-line">
+                                <span class="status-label">Email:</span>
+                                <span class="status-value">${email}</span>
+                            </div>
+                            <div class="status-line">
+                                <span class="status-label">Credits:</span>
+                                <span class="status-value">${credits}</span>
+                            </div>
+                            <div class="status-line">
+                                <span class="status-label">Expiry:</span>
+                                <span class="status-value">${formattedExpiry}</span>
+                            </div>
+                        `;
+                        
+                        // Create and show flash message
+                        const flashDiv = document.createElement('div');
+                        flashDiv.className = 'flash success status';
+                        flashDiv.innerHTML = statusHtml;
+                        document.querySelector('h1').insertAdjacentElement('afterend', flashDiv);
+                        
+                        // Remove flash message after 20 seconds
+                        setTimeout(() => {
+                            flashDiv.style.opacity = '0';
+                            flashDiv.style.transform = 'translateY(-20px)';
+                            setTimeout(() => flashDiv.remove(), 300);
+                        }, 20000);
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                const flashDiv = document.createElement('div');
+                flashDiv.className = 'flash danger';
+                flashDiv.textContent = 'Error checking user status';
+                document.querySelector('h1').insertAdjacentElement('afterend', flashDiv);
+                
+                // Remove error flash after 10 seconds
+                setTimeout(() => {
+                    flashDiv.style.opacity = '0';
+                    flashDiv.style.transform = 'translateY(-20px)';
+                    setTimeout(() => flashDiv.remove(), 300);
+                }, 10000);
+            })
+            .finally(() => {
+                button.disabled = false;
+            });
+        });
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('api-key-modal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeModal();
+            }
+        });
+    </script>
 </body>
 </html>

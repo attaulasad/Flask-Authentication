@@ -1,8 +1,8 @@
 import sqlite3
-from crypto_utils import encrypt_user_acc_data
+from crypto_utils import hash_user_acc_data, decrypt_data
 
 def migrate_db():
-    conn = sqlite3.connect('users.db')
+    conn = sqlite3.connect('database.db')
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
 
@@ -16,6 +16,24 @@ def migrate_db():
         )
     """)
 
+    # Migrate usernames to hashed format
+    c.execute("SELECT id, username, password, created_at FROM accounts")
+    accounts = c.fetchall()
+    for account in accounts:
+        try:
+            # Check if username is encrypted (Fernet) or already hashed
+            if len(account['username']) > 64:  # Fernet tokens are typically longer
+                c.execute("SELECT token_id FROM user_tokens WHERE account_id = ?", (account['id'],))
+                token_row = c.fetchone()
+                if token_row:
+                    user_data = decrypt_data(token_row['token_id'])
+                    username = user_data['username'].lower()
+                    hashed_username = hash_user_acc_data(username)
+                    c.execute("UPDATE accounts SET username = ? WHERE id = ?", (hashed_username, account['id']))
+                    print(f"Migrated username for account_id {account['id']} to hashed format")
+        except Exception as e:
+            print(f"Error migrating username for account_id {account['id']}: {str(e)}")
+
     # Check api_keys schema
     c.execute("PRAGMA table_info(api_keys)")
     columns = [row['name'] for row in c.fetchall()]
@@ -24,7 +42,6 @@ def migrate_db():
     has_account_id = 'account_id' in columns
 
     if has_username and not has_account_id:
-        # Old schema with username column
         print("Migrating api_keys table from username to account_id...")
         c.execute("SELECT api_key, username, created_at FROM api_keys")
         api_keys = c.fetchall()
@@ -41,22 +58,20 @@ def migrate_db():
             api_key = row['api_key']
             username = row['username']
             created_at = row['created_at']
-            encrypted_username = encrypt_user_acc_data(username)
-            encrypted_password = encrypt_user_acc_data('migrated_password')
-            c.execute("INSERT OR IGNORE INTO accounts (username, password, created_at) VALUES (?, ?, ?)",
-                      (encrypted_username, encrypted_password, created_at))
-            c.execute("SELECT id FROM accounts WHERE username = ?", (encrypted_username,))
-            account_id = c.fetchone()['id']
-            try:
-                c.execute("INSERT INTO api_keys_new (api_key, account_id, created_at) VALUES (?, ?, ?)",
-                          (api_key, account_id, created_at))
-            except sqlite3.IntegrityError:
-                print(f"Skipping duplicate account_id {account_id}")
+            hashed_username = hash_user_acc_data(username)
+            c.execute("SELECT id FROM accounts WHERE username = ?", (hashed_username,))
+            account_row = c.fetchone()
+            if account_row:
+                account_id = account_row['id']
+                try:
+                    c.execute("INSERT INTO api_keys_new (api_key, account_id, created_at) VALUES (?, ?, ?)",
+                              (api_key, account_id, created_at))
+                except sqlite3.IntegrityError:
+                    print(f"Skipping duplicate account_id {account_id}")
         c.execute("DROP TABLE api_keys")
         c.execute("ALTER TABLE api_keys_new RENAME TO api_keys")
         print("Migration from username to account_id completed.")
     elif not has_id and has_account_id:
-        # Schema missing id column
         print("Adding id column to api_keys table...")
         c.execute("SELECT api_key, account_id, created_at FROM api_keys")
         api_keys = c.fetchall()
@@ -79,7 +94,6 @@ def migrate_db():
         c.execute("ALTER TABLE api_keys_new RENAME TO api_keys")
         print("Added id column to api_keys.")
     else:
-        # Ensure table exists with correct schema
         c.execute("""
             CREATE TABLE IF NOT EXISTS api_keys (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -107,7 +121,7 @@ def migrate_db():
                         token TEXT NOT NULL,
                         credits INTEGER NOT NULL,
                         expiry TEXT NOT NULL,
-                        FOREIGN KEY (account_id) REFERENCES accounts(id)
+                        FOREIGN KEY (account_id) INDEX(id)
                     )
                 """)
                 c.execute("SELECT id, account_id, token, credits, expiry FROM user_tokens")
