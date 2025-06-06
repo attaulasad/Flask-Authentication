@@ -327,6 +327,8 @@ def create_user_form():
             account_id = c.lastrowid
             c.execute("INSERT INTO user_tokens (account_id, token, credits, expiry_date) VALUES (?, ?, ?, ?)",
                       (account_id, token, credits, expiry))
+            c.execute("INSERT INTO request_history (account_id, request_type, credits, timestamp) VALUES (?, ?, ?, ?)",
+                      (account_id, "signup", credits, datetime.now()))
             conn.commit()
             log_action("admin_user_created", {"username": username, "action": "Account created", "credits": credits}, f"account_id: {account_id}")
             flash(f"User {username} created successfully.", "success")
@@ -713,7 +715,7 @@ def signup():
                 c.execute("INSERT INTO user_tokens (account_id, token, credits, expiry_date) VALUES (?, ?, ?, ?)",
                           (account_id, token, credits, expiry))
                 c.execute("INSERT INTO request_history (account_id, request_type, credits, timestamp) VALUES (?, ?, ?, ?)",
-                          (account_id, "signup", 0, datetime.now()))
+                          (account_id, "signup", credits, datetime.now()))
                 conn.commit()
                 log_action("user_signup", {"username": username, "action": "Account created", "credits": credits}, f"account_id: {account_id}")
                 flash("Account created successfully. Please log in.", "success")
@@ -819,9 +821,18 @@ def user_dashboard():
                 } for row in c.fetchall()
             ]
 
+            # Get the latest token data to ensure we have the most up-to-date credits
+            c.execute("""
+                SELECT credits FROM user_tokens 
+                WHERE account_id = ? 
+                ORDER BY id DESC LIMIT 1
+            """, (user_id,))
+            latest_credits = c.fetchone()
+            current_credits = latest_credits["credits"] if latest_credits else 0
+
             user_info = {
                 "username": username,
-                "credits": user_data["credits"] if user_data["credits"] else 0,
+                "credits": current_credits,
                 "expiry": user_data["expiry_date"] if user_data["expiry_date"] else "N/A",
                 "api_key": user_data["api_key"] if user_data["api_key"] else None
             }
@@ -899,8 +910,9 @@ def user_generate_api_key():
             c.execute("INSERT INTO user_tokens (account_id, token, credits, expiry_date) VALUES (?, ?, ?, ?)",
                       (user_id, new_token, credits, expiry_iso))
             
+            # Log request with current credits
             c.execute("INSERT INTO request_history (account_id, request_type, credits, timestamp) VALUES (?, ?, ?, ?)",
-                      (user_id, "api_key_generation", 0, datetime.now()))
+                      (user_id, "api_key_generation", credits, datetime.now()))
             
             conn.commit()
             flash("API key generated successfully.", "success")
@@ -926,10 +938,21 @@ def user_delete_api_key():
             if not api_key_row:
                 flash("No API key found.", "danger")
                 return redirect(url_for('user_dashboard'))
+            
+            # Get current credits before deletion
+            c.execute("SELECT token, credits FROM user_tokens WHERE account_id = ? ORDER BY id DESC LIMIT 1", (user_id,))
+            token_data = c.fetchone()
+            if token_data:
+                user_data = decrypt_data(token_data["token"])
+                current_credits = user_data["credits"]
+            else:
+                current_credits = 0
                 
             c.execute("DELETE FROM api_keys WHERE account_id = ?", (user_id,))
+            
+            # Log request with current credits
             c.execute("INSERT INTO request_history (account_id, request_type, credits, timestamp) VALUES (?, ?, ?, ?)",
-                      (user_id, "api_key_deletion", 0, datetime.now()))
+                      (user_id, "api_key_deletion", current_credits, datetime.now()))
             conn.commit()
             
             flash("API key deleted successfully.", "success")
@@ -1046,6 +1069,82 @@ def api_generate():
         print(f"API generate error: {str(e)}")
         return jsonify({"error": "Internal server error"}), 500
 
+@app.route('/api/query', methods=['POST'])
+@api_key_required
+def handle_query():
+    try:
+        account_id = request.account_id
+        query = request.json.get('query')
+        credits_cost = 1  # 1 credit per query
+        
+        if not query:
+            return jsonify({"error": "Query is required"}), 400
+            
+        with get_db_connection() as conn:
+            c = conn.cursor()
+            # First check if user has an API key
+            c.execute("SELECT id FROM api_keys WHERE account_id = ?", (account_id,))
+            if not c.fetchone():
+                return jsonify({"error": "API key required to use Query Assistant"}), 403
+
+            c.execute("SELECT token, credits FROM user_tokens WHERE account_id = ? ORDER BY id DESC LIMIT 1", (account_id,))
+            token_data = c.fetchone()
+            if not token_data:
+                return jsonify({"error": "User token not found"}), 404
+                
+            user_data = decrypt_data(token_data["token"])
+            if user_data.get("deleted", False):
+                return jsonify({"error": "Account disabled"}), 403
+                
+            expiry_time = datetime.fromisoformat(user_data["expiry"])
+            if datetime.now() > expiry_time:
+                return jsonify({"error": "Token expired"}), 403
+                
+            if user_data["credits"] < credits_cost:
+                return jsonify({"error": "Insufficient credits"}), 403
+
+            # Deduct credits
+            user_data["credits"] -= credits_cost
+            new_token = encrypt_data(user_data)
+            
+            # Create new token record
+            c.execute("INSERT INTO user_tokens (account_id, token, credits, expiry_date) VALUES (?, ?, ?, ?)",
+                      (account_id, new_token, user_data["credits"], user_data["expiry"]))
+            
+            # Log request with actual credit cost
+            c.execute("INSERT INTO request_history (account_id, request_type, credits, timestamp) VALUES (?, ?, ?, ?)",
+                      (account_id, "query", credits_cost, datetime.now()))
+            
+            # Get the inserted request history
+            c.execute("""
+                SELECT request_type, credits, timestamp 
+                FROM request_history 
+                WHERE account_id = ? 
+                ORDER BY id DESC LIMIT 1
+            """, (account_id,))
+            request_data = c.fetchone()
+            
+            conn.commit()
+            
+            # Generate response
+            response = {
+                "status": "success",
+                "message": f"Processed query: {query}",
+                "response": f"This is a sample response to your query: '{query}'. In a real application, this would contain the actual response based on your query.",
+                "credits_remaining": user_data["credits"],
+                "request": {
+                    "request_type": request_data["request_type"],
+                    "credits": request_data["credits"],
+                    "timestamp": request_data["timestamp"]
+                }
+            }
+            
+            return jsonify(response)
+            
+    except Exception as e:
+        print(f"Query handling error: {str(e)}")
+        return jsonify({"error": "Internal server error"}), 500
+
 # === Template Filters ===
 @app.template_filter('datetimeformat')
 def datetimeformat(value):
@@ -1054,6 +1153,16 @@ def datetimeformat(value):
         return dt.strftime('%Y-%m-%d %H:%M:%S')
     except (ValueError, TypeError):
         return str(value)
+
+@app.template_filter('split')
+def split_filter(value, delimiter=' '):
+    return value.split(delimiter)
+
+@app.context_processor
+def utility_processor():
+    return {
+        'now': datetime.now
+    }
 
 # === Error Handling ===
 @app.errorhandler(404)

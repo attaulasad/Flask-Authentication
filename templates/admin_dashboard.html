@@ -414,19 +414,20 @@
 
         .api-keys-table {
             width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
+            border-collapse: collapse;
             margin: 15px 0;
             font-size: 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
         }
 
         .api-keys-table th {
-            background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
+            background: var(--accent-color);
             color: white;
-            padding: 16px;
+            padding: 16px 30px;
             font-weight: 600;
             text-align: left;
-            border-radius: 8px 8px 0 0;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             position: sticky;
@@ -435,18 +436,22 @@
         }
 
         .api-keys-table td {
-            padding: 16px;
+            padding: 16px 30px;
             border-bottom: 1px solid var(--border-color);
+            border-right: 1px solid var(--border-color);
             transition: all 0.3s ease;
         }
 
+        .api-keys-table td:last-child {
+            border-right: none;
+        }
+
         .api-keys-table tr {
-            background: linear-gradient(90deg, rgba(59, 130, 246, 0.02), transparent);
+            background: var(--card-bg);
         }
 
         .api-keys-table tr:hover td {
-            background: rgba(59, 130, 246, 0.1);
-            transform: translateX(5px);
+            background: rgba(59, 130, 246, 0.05);
         }
 
         .api-key-hidden {
@@ -531,30 +536,6 @@
         .delete-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
-        }
-
-        .toggle-api-key {
-            background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
-        }
-
-        .toggle-api-key:hover:not(:disabled) {
-            background: linear-gradient(135deg, var(--accent-hover), var(--accent-color));
-        }
-
-        .copy-api-key {
-            background: linear-gradient(135deg, var(--success-color), var(--success-hover));
-        }
-
-        .copy-api-key:hover:not(:disabled) {
-            background: linear-gradient(135deg, var(--success-hover), var(--success-color));
-        }
-
-        .delete-api-key {
-            background: linear-gradient(135deg, var(--danger-color), var(--danger-hover));
-        }
-
-        .delete-api-key:hover:not(:disabled) {
-            background: linear-gradient(135deg, var(--danger-hover), var(--danger-color));
         }
 
         .modal {
@@ -854,7 +835,7 @@
                     <thead>
                         <tr>
                             <th>User</th>
-                            <th>API Key</th>
+                            <th>Key</th>
                             <th>Credits</th>
                             <th>Expiry</th>
                             <th>Actions</th>
@@ -865,17 +846,20 @@
                         <tr class="api-key-row" data-api-key-id="{{ key.id }}">
                             <td>{{ key.username }}</td>
                             <td>
-                                <span class="api-key-hidden" id="api-key-{{ loop.index }}" data-api-key="{{ key.api_key }}">
+                                <span class="api-key-partial">
                                     {{ key.api_key[:8] if key.api_key != 'No API Key' else 'N/A' }}...
                                 </span>
+                                {% if key.api_key and key.api_key != 'No API Key' %}
+                                <span id="full-api-key-{{ loop.index0 }}" data-api-key="{{ key.api_key }}" style="display: none;"></span>
+                                {% endif %}
                             </td>
                             <td><span class="credits-badge">{{ key.credits }}</span></td>
                             <td><span class="expiry-badge">{{ key.expiry | datetimeformat }}</span></td>
                             <td class="action-buttons">
-                                <button onclick="showApiKey('{{ loop.index0 }}')" class="action-btn show-btn">
+                                <button onclick="showApiKey('{{ loop.index0 }}')" class="action-btn show-btn" {% if key.api_key == 'No API Key' %}disabled{% endif %}>
                                     <span>👁️</span> Show
                                 </button>
-                                <button onclick="copyApiKey('{{ loop.index0 }}')" class="action-btn copy-btn">
+                                <button onclick="copyApiKey('{{ loop.index0 }}')" class="action-btn copy-btn" {% if key.api_key == 'No API Key' %}disabled{% endif %}>
                                     <span>📋</span> Copy
                                 </button>
                                 <form method="POST" action="{{ url_for('delete_api_key_form') }}" style="display: inline;">
@@ -938,7 +922,8 @@
 
         // API Key Functions
         function showApiKey(index) {
-            const apiKeyElement = document.getElementById('api-key-' + index);
+            const apiKeyElement = document.getElementById('full-api-key-' + index);
+            
             if (!apiKeyElement) {
                 alert('Error: API key element not found.');
                 return;
@@ -962,13 +947,15 @@
         }
 
         function copyApiKey(index) {
-            const apiKeyElement = document.getElementById('api-key-' + index);
+            const apiKeyElement = document.getElementById('full-api-key-' + index);
+            
             if (!apiKeyElement) {
                 alert('Error: API key element not found.');
                 return;
             }
             
             const apiKey = apiKeyElement.getAttribute('data-api-key');
+            
             if (apiKey && apiKey !== 'No API Key') {
                 navigator.clipboard.writeText(apiKey)
                     .then(() => {

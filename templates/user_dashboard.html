@@ -558,6 +558,185 @@
         font-size: 14px;
       }
     }
+
+    /* Query Section Styles */
+    .query-section {
+      background: var(--card-bg);
+      border-radius: 15px;
+      padding: 25px;
+      margin-bottom: 30px;
+      box-shadow: 0 10px 30px var(--shadow-color);
+    }
+
+    .chat-container {
+      height: 400px;
+      overflow-y: auto;
+      padding: 20px;
+      background: var(--input-bg);
+      border-radius: 12px;
+      margin-bottom: 20px;
+      border: 1px solid var(--border-color);
+    }
+
+    .message {
+      margin-bottom: 15px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .message.user {
+      align-items: flex-end;
+    }
+
+    .message.bot {
+      align-items: flex-start;
+    }
+
+    .message-content {
+      max-width: 80%;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      line-height: 1.4;
+    }
+
+    .message.user .message-content {
+      background: var(--accent-color);
+      color: white;
+      border-bottom-right-radius: 4px;
+    }
+
+    .message.bot .message-content {
+      background: var(--input-bg);
+      border: 1px solid var(--border-color);
+      border-bottom-left-radius: 4px;
+    }
+
+    .message-time {
+      font-size: 0.75rem;
+      color: var(--note-color);
+      margin-top: 4px;
+    }
+
+    .query-form {
+      display: flex;
+      gap: 10px;
+    }
+
+    .query-input {
+      flex: 1;
+      padding: 12px 16px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background: var(--input-bg);
+      color: var(--text-color);
+      font-size: 0.95rem;
+      transition: all 0.3s ease;
+    }
+
+    .query-input:focus {
+      outline: none;
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+    }
+
+    .query-submit {
+      padding: 12px 24px;
+      background: var(--accent-color);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .query-submit:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+
+    .query-submit:disabled {
+      background: var(--note-color);
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .credits-info {
+      font-size: 0.9rem;
+      color: var(--note-color);
+      margin-top: 10px;
+      text-align: right;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message {
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .request-history {
+      margin-top: 20px;
+      max-height: 300px;
+      overflow-y: auto;
+      padding-right: 10px;
+    }
+
+    .request-history::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .request-history::-webkit-scrollbar-track {
+      background: var(--input-bg);
+      border-radius: 4px;
+    }
+
+    .request-history::-webkit-scrollbar-thumb {
+      background: var(--accent-color);
+      border-radius: 4px;
+    }
+
+    .request-history::-webkit-scrollbar-thumb:hover {
+      background: var(--accent-hover);
+    }
+
+    .request-item {
+      padding: 12px;
+      background: var(--input-bg);
+      border-radius: 8px;
+      margin-bottom: 10px;
+      border: 1px solid var(--border-color);
+      transition: all 0.3s ease;
+    }
+
+    .request-item:hover {
+      transform: translateX(5px);
+      box-shadow: 0 2px 8px var(--shadow-color);
+    }
+
+    .request-type {
+      font-weight: 600;
+      color: var(--accent-color);
+      margin-bottom: 5px;
+    }
+
+    .request-details {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9rem;
+      color: var(--note-color);
+    }
+
+    .request-credits {
+      color: var(--success-color);
+    }
+
+    .request-time {
+      font-family: 'Consolas', 'Monaco', monospace;
+    }
   </style>
 </head>
 <body>
@@ -579,29 +758,19 @@
   <div class="dashboard-grid">
     <!-- User Info Section -->
     <section class="user-info">
-      <h2>Account Information</h2>
+      <h2>User Information</h2>
       <div class="info-grid">
         <div class="info-item">
-          <div class="info-label">Username</div>
+          <div class="info-label">Email</div>
           <div class="info-value">{{ user.username }}</div>
         </div>
         <div class="info-item">
           <div class="info-label">Credits</div>
-          <div class="info-value">{{ user.credits }}</div>
+          <div class="info-value" id="creditDisplay">{{ user.credits }}</div>
         </div>
         <div class="info-item">
           <div class="info-label">Expiry Date</div>
-          <div class="expiry-date">
-            {% set expiry_parts = user.expiry | datetimeformat | split(' ') %}
-            <div class="expiry-date-row">
-              <span class="expiry-date-label">Date:</span>
-              <span class="expiry-date-value">{{ expiry_parts[0] }}</span>
-            </div>
-            <div class="expiry-date-row">
-              <span class="expiry-date-label">Time:</span>
-              <span class="expiry-date-value">{{ expiry_parts[1] }}</span>
-            </div>
-          </div>
+          <div class="info-value">{{ user.expiry | datetimeformat }}</div>
         </div>
       </div>
     </section>
@@ -647,28 +816,39 @@
     <!-- History Section -->
     <section class="history-section">
       <h2>Request History</h2>
-      {% if request_history %}
-        <table class="history-table">
-          <thead>
-            <tr>
-              <th>Type</th>
-              <th>Credits</th>
-              <th>Timestamp</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for entry in request_history %}
-              <tr>
-                <td>{{ entry.request_type }}</td>
-                <td>{{ entry.credits }}</td>
-                <td>{{ entry.timestamp | datetimeformat }}</td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      {% else %}
-        <p>No request history found.</p>
-      {% endif %}
+      <div class="request-history">
+        {% for request in request_history %}
+        <div class="request-item">
+          <div class="request-type">{{ request.request_type | replace('_', ' ') | title }}</div>
+          <div class="request-details">
+            <span class="request-credits">{{ request.credits }} credits</span>
+            <span class="request-time">{{ request.timestamp | datetimeformat }}</span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <!-- Query Section -->
+    <section class="query-section">
+      <h2>Query Assistant</h2>
+      <div class="chat-container" id="chatContainer">
+        {% if not user.api_key %}
+        <div class="message bot">
+          <div class="message-content">
+            Please create API key first
+          </div>
+          <div class="message-time">{{ now() | datetimeformat }}</div>
+        </div>
+        {% endif %}
+      </div>
+      <form class="query-form" id="queryForm">
+        <input type="text" class="query-input" id="queryInput" placeholder="Type your query here..." required>
+        <button type="button" class="query-submit" id="querySubmit">Send</button>
+      </form>
+      <div class="credits-info">
+        Cost per query: 1 credit
+      </div>
     </section>
   </div>
 
@@ -704,26 +884,42 @@
     // API Key Functions
     function showApiKey() {
       const apiKeyElement = document.getElementById('api-key');
-      if (!apiKeyElement) return;
-      
       const modal = document.getElementById('api-key-modal');
       const modalKey = document.getElementById('modal-api-key');
+
+      // Add checks to ensure elements are found
+      if (!apiKeyElement) {
+        console.error('API key element not found.');
+        return;
+      }
+      if (!modal || !modalKey) {
+          console.error('API key modal elements not found.');
+          return;
+      }
+      
       const apiKey = apiKeyElement.getAttribute('data-api-key');
       
       if (apiKey) {
         modalKey.textContent = apiKey;
-        modal.style.display = 'flex';
+        modal.style.display = 'flex'; // Assuming the modal is initially hidden by CSS
+      } else {
+          console.warn('API key not found in data-api-key attribute.');
       }
     }
 
     function closeModal() {
       const modal = document.getElementById('api-key-modal');
-      modal.style.display = 'none';
+      if (modal) {
+         modal.style.display = 'none';
+      }
     }
 
     function copyApiKey() {
       const apiKeyElement = document.getElementById('api-key');
-      if (!apiKeyElement) return;
+      if (!apiKeyElement) {
+        console.error('API key element not found for copying.');
+        return;
+      }
       
       const apiKey = apiKeyElement.getAttribute('data-api-key');
       if (apiKey) {
@@ -732,9 +928,11 @@
             alert('API key copied to clipboard!');
           })
           .catch(err => {
-            console.error('Failed to copy:', err);
+            console.error('Failed to copy API key:', err);
             alert('Failed to copy API key. Please try again.');
           });
+      } else {
+          console.warn('API key not found in data-api-key attribute for copying.');
       }
     }
 
@@ -769,6 +967,131 @@
       if (event.key === 'Escape') {
         closeModal();
       }
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const chatContainer = document.getElementById('chatContainer');
+      const queryForm = document.getElementById('queryForm');
+      const queryInput = document.getElementById('queryInput');
+      const querySubmit = document.getElementById('querySubmit');
+      const creditDisplay = document.getElementById('creditDisplay');
+      const requestHistory = document.querySelector('.request-history');
+      const hasApiKey = document.getElementById('api-key') !== null;
+
+      function updateCredits(newCredits) {
+        if (creditDisplay) {
+          creditDisplay.textContent = newCredits;
+        }
+      }
+
+      function addRequestToHistory(request) {
+        const requestItem = document.createElement('div');
+        requestItem.className = 'request-item';
+        
+        const requestType = document.createElement('div');
+        requestType.className = 'request-type';
+        requestType.textContent = request.request_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        
+        const requestDetails = document.createElement('div');
+        requestDetails.className = 'request-details';
+        
+        const requestCredits = document.createElement('span');
+        requestCredits.className = 'request-credits';
+        requestCredits.textContent = `${request.credits} credits`;
+        
+        const requestTime = document.createElement('span');
+        requestTime.className = 'request-time';
+        requestTime.textContent = new Date(request.timestamp).toLocaleString();
+        
+        requestDetails.appendChild(requestCredits);
+        requestDetails.appendChild(requestTime);
+        
+        requestItem.appendChild(requestType);
+        requestItem.appendChild(requestDetails);
+        
+        // Add to the top of the history
+        if (requestHistory.firstChild) {
+          requestHistory.insertBefore(requestItem, requestHistory.firstChild);
+        } else {
+          requestHistory.appendChild(requestItem);
+        }
+      }
+
+      function addMessage(content, isUser = false) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
+        
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'message-content';
+        contentDiv.textContent = content;
+        
+        const timeDiv = document.createElement('div');
+        timeDiv.className = 'message-time';
+        timeDiv.textContent = new Date().toLocaleString();
+        
+        messageDiv.appendChild(contentDiv);
+        messageDiv.appendChild(timeDiv);
+        chatContainer.appendChild(messageDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      }
+
+      function handleQuery() {
+        const query = queryInput.value.trim();
+        if (!query) return;
+
+        addMessage(query, true);
+        queryInput.value = '';
+
+        if (!hasApiKey) {
+          addMessage('Please create API key first', false);
+          return;
+        }
+
+        const apiKey = document.getElementById('api-key').getAttribute('data-api-key');
+        fetch('/api/query', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+          },
+          body: JSON.stringify({ query: query, deduct_credits: 1 })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.error) {
+            addMessage(data.error, false);
+          } else {
+            addMessage(data.response, false);
+            updateCredits(data.credits_remaining);
+
+            // Add to request history
+            const request = {
+              request_type: 'query',
+              credits: 1,
+              timestamp: new Date()
+            };
+            addRequestToHistory(request);
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          addMessage('An error occurred while processing your query.', false);
+        });
+      }
+
+      // Add click event listener to the submit button
+      querySubmit.addEventListener('click', function(e) {
+        e.preventDefault();
+        handleQuery();
+      });
+
+      // Add enter key support
+      queryInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          handleQuery();
+        }
+      });
     });
   </script>
 </body>
