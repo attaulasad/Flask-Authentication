@@ -38,7 +38,6 @@
             --success-hover: #10b981;
             --border-color: rgba(255, 255, 255, 0.15);
             --input-bg: rgba(51, 65, 85, 0.9);
-            --note-color: #94a3b8;
             --shadow-color: rgba(0, 0, 0, 0.3);
             --glass-bg: rgba(30, 41, 59, 0.3);
         }
@@ -266,7 +265,7 @@
             box-shadow: 0 6px 16px var(--shadow-color);
             position: relative;
             display: flex;
-            align-items: center;
+            flex-direction: column;
             gap: 15px;
             animation: slideIn 0.3s ease;
             overflow: hidden;
@@ -314,6 +313,7 @@
         .flash.success::before {
             content: '✅';
             font-size: 24px;
+            margin-bottom: 10px;
         }
 
         .flash.danger {
@@ -325,24 +325,19 @@
         .flash.danger::before {
             content: '⚠️';
             font-size: 24px;
+            margin-bottom: 10px;
         }
 
-        .status-line {
-            display: flex;
+        .status-grid {
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            gap: 10px;
             align-items: center;
-            gap: 12px;
-            padding: 10px 0;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-        }
-
-        .status-line:last-child {
-            border-bottom: none;
         }
 
         .status-label {
             font-weight: 600;
             color: var(--accent-color);
-            min-width: 120px;
             font-size: 14px;
         }
 
@@ -353,7 +348,6 @@
             padding: 8px 12px;
             border-radius: 6px;
             border: 1px solid var(--border-color);
-            flex-grow: 1;
             font-size: 14px;
         }
 
@@ -414,7 +408,8 @@
 
         .api-keys-table {
             width: 100%;
-            border-collapse: collapse;
+            border-collapse: separate;
+            border-spacing: 0;
             margin: 15px 0;
             font-size: 14px;
             border: 1px solid var(--border-color);
@@ -425,7 +420,7 @@
         .api-keys-table th {
             background: var(--accent-color);
             color: white;
-            padding: 16px 30px;
+            padding: 16px;
             font-weight: 600;
             text-align: left;
             text-transform: uppercase;
@@ -436,18 +431,19 @@
         }
 
         .api-keys-table td {
-            padding: 16px 30px;
+            padding: 16px;
             border-bottom: 1px solid var(--border-color);
-            border-right: 1px solid var(--border-color);
             transition: all 0.3s ease;
+            vertical-align: middle;
         }
 
-        .api-keys-table td:last-child {
-            border-right: none;
+        .api-keys-table tr:last-child td {
+            border-bottom: none;
         }
 
         .api-keys-table tr {
             background: var(--card-bg);
+            transition: all 0.3s ease;
         }
 
         .api-keys-table tr:hover td {
@@ -494,48 +490,48 @@
         }
 
         .action-btn {
-            padding: 4px 8px;
-            border-radius: 4px;
+            padding: 8px 12px;
+            border-radius: 6px;
             font-size: 0.875rem;
             transition: all 0.2s ease;
             display: inline-flex;
             align-items: center;
             gap: 4px;
             border: none;
-            background: none;
             cursor: pointer;
         }
 
         .show-btn {
-            color: #2563eb;
+            background: #2563eb;
+            color: white;
         }
 
         .show-btn:hover {
-            color: #1d4ed8;
-            background-color: rgba(37, 99, 235, 0.1);
+            background: #1d4ed8;
         }
 
         .copy-btn {
-            color: #059669;
+            background: #059669;
+            color: white;
         }
 
         .copy-btn:hover {
-            color: #047857;
-            background-color: rgba(5, 150, 105, 0.1);
+            background: #047857;
         }
 
         .delete-btn {
-            color: #dc2626;
+            background: #dc2626;
+            color: white;
         }
 
         .delete-btn:hover {
-            color: #b91c1c;
-            background-color: rgba(220, 38, 38, 0.1);
+            background: #b91c1c;
         }
 
         .delete-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
+            background: #6b7280;
         }
 
         .modal {
@@ -620,6 +616,10 @@
             transform: rotate(90deg);
         }
 
+        .create-user-section {
+            display: none;
+        }
+
         @media (max-width: 768px) {
             body {
                 padding: 15px;
@@ -657,13 +657,99 @@
                 gap: 8px;
             }
 
-            .action-buttons button {
+            .action-btn {
                 width: 100%;
+                justify-content: center;
             }
 
             .expiry-group {
                 grid-template-columns: 1fr;
             }
+
+            .status-grid {
+                grid-template-columns: 100px 1fr;
+            }
+        }
+
+        .flash.success.status {
+            padding: 10px;
+            margin: 10px auto;
+            max-width: 600px;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+        }
+
+        .flash.success.status::before {
+            display: none;
+        }
+
+        .status-display {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 10px;
+            background: var(--input-bg);
+            border-radius: 6px;
+        }
+
+        .status-row {
+            display: flex;
+            align-items: center;
+            padding: 6px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .status-row:last-child {
+            border-bottom: none;
+        }
+
+        .status-label {
+            width: 80px;
+            font-weight: 600;
+            color: var(--accent-color);
+            font-size: 0.9em;
+        }
+
+        .status-value {
+            flex: 1;
+            font-family: 'Consolas', 'Monaco', monospace;
+            color: var(--text-color);
+            word-break: break-all;
+            font-size: 0.9em;
+        }
+
+        .flash.status {
+            max-width: 500px;
+            padding: 15px 20px;
+            gap: 10px;
+        }
+
+        .status-display {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .status-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 4px 0;
+        }
+
+        .status-label {
+            width: 70px;
+            font-weight: 600;
+            color: var(--accent-color);
+            font-size: 0.9em;
+        }
+
+        .status-value {
+            flex: 1;
+            font-family: 'Consolas', 'Monaco', monospace;
+            color: var(--text-color);
+            word-break: break-all;
+            font-size: 0.9em;
         }
     </style>
 </head>
@@ -684,8 +770,8 @@
     {% endwith %}
 
     <div class="dashboard-grid">
-        <!-- Create User Section -->
-        <section>
+        <!-- Create User Section (Hidden) -->
+        <section class="create-user-section">
             <h2>Create User</h2>
             <form method="POST" action="{{ url_for('create_user_form') }}" onsubmit="return handleFormSubmit(this)">
                 <div>
@@ -790,7 +876,7 @@
         <!-- Check User Status Section -->
         <section>
             <h2>Check User Status</h2>
-            <form method="POST" action="{{ url_for('check_user_status_form') }}">
+            <form method="POST" action="{{ url_for('check_user_status_form') }}" onsubmit="return handleFormSubmit(this)">
                 <div>
                     <label for="status_account_id">User</label>
                     <select id="status_account_id" name="account_id" required>
@@ -843,7 +929,7 @@
                     </thead>
                     <tbody id="api-keys-tbody">
                         {% for key in active_api_keys %}
-                        <tr class="api-key-row" data-api-key-id="{{ key.id }}">
+                        <tr class="api-key-row" data-api-key-id="{{ key.api_key_id }}">
                             <td>{{ key.username }}</td>
                             <td>
                                 <span class="api-key-partial">
@@ -856,15 +942,15 @@
                             <td><span class="credits-badge">{{ key.credits }}</span></td>
                             <td><span class="expiry-badge">{{ key.expiry | datetimeformat }}</span></td>
                             <td class="action-buttons">
-                                <button onclick="showApiKey('{{ loop.index0 }}')" class="action-btn show-btn" {% if key.api_key == 'No API Key' %}disabled{% endif %}>
+                                <button onclick="showApiKey('{{ loop.index0 }}')" class="action-btn show-btn" >
                                     <span>👁️</span> Show
                                 </button>
-                                <button onclick="copyApiKey('{{ loop.index0 }}')" class="action-btn copy-btn" {% if key.api_key == 'No API Key' %}disabled{% endif %}>
+                                <button onclick="copyApiKey('{{ loop.index0 }}')" class="action-btn copy-btn" >
                                     <span>📋</span> Copy
                                 </button>
-                                <form method="POST" action="{{ url_for('delete_api_key_form') }}" style="display: inline;">
-                                    <input type="hidden" name="api_key_id" value="{{ key.api_key_id }}">
-                                    <button type="submit" class="action-btn delete-btn" onclick="return confirm('Are you sure you want to delete this API key?')" {% if key.api_key == 'No API Key' %}disabled{% endif %}>
+                                <form method="POST" action="{{ url_for('delete_user_form') }}" style="display: inline;">
+                                    <input type="hidden" name="account_id" value="{{ key.account_id }}">
+                                    <button type="submit" class="action-btn delete-btn" onclick="return confirm('Are you sure you want to delete this account?')" >
                                         <span>🗑️</span> Delete
                                     </button>
                                 </form>
@@ -941,11 +1027,6 @@
             }
         }
 
-        function closeModal() {
-            const modal = document.getElementById('api-key-modal');
-            modal.style.display = 'none';
-        }
-
         function copyApiKey(index) {
             const apiKeyElement = document.getElementById('full-api-key-' + index);
             
@@ -967,28 +1048,6 @@
                     });
             } else {
                 alert('No valid API key to copy.');
-            }
-        }
-
-        function deleteApiKey(apiKeyId) {
-            if (!apiKeyId) {
-                alert('No valid API key to delete.');
-                return;
-            }
-            
-            if (confirm('Are you sure you want to delete this API key?')) {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = '{{ url_for("delete_api_key_form") }}';
-                
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'api_key_id';
-                input.value = apiKeyId;
-                
-                form.appendChild(input);
-                document.body.appendChild(form);
-                form.submit();
             }
         }
 
@@ -1021,6 +1080,7 @@
             const button = form.querySelector('button[type="submit"]');
             
             button.disabled = true;
+            button.textContent = 'Checking...';
             
             const formData = new FormData(form);
             
@@ -1032,7 +1092,7 @@
             .then(html => {
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(html, 'text/html');
-                const flashMessage = doc.querySelector('.flash.success');
+                const flashMessage = doc.querySelector('.flash.status');
                 
                 if (flashMessage) {
                     const message = flashMessage.textContent;
@@ -1042,25 +1102,27 @@
                         const [, email, credits, expiry] = match;
                         const formattedExpiry = new Date(expiry).toLocaleString();
                         
-                        // Create formatted status display
+                        // Create formatted status display with fixed width and row layout
                         const statusHtml = `
-                            <div class="status-line">
-                                <span class="status-label">Email:</span>
-                                <span class="status-value">${email}</span>
-                            </div>
-                            <div class="status-line">
-                                <span class="status-label">Credits:</span>
-                                <span class="status-value">${credits}</span>
-                            </div>
-                            <div class="status-line">
-                                <span class="status-label">Expiry:</span>
-                                <span class="status-value">${formattedExpiry}</span>
+                            <div class="status-display">
+                                <div class="status-row">
+                                    <span class="status-label">Email:</span>
+                                    <span class="status-value">${email}</span>
+                                </div>
+                                <div class="status-row">
+                                    <span class="status-label">Credits:</span>
+                                    <span class="status-value">${credits}</span>
+                                </div>
+                                <div class="status-row">
+                                    <span class="status-label">Expiry:</span>
+                                    <span class="status-value">${formattedExpiry}</span>
+                                </div>
                             </div>
                         `;
                         
                         // Create and show flash message
                         const flashDiv = document.createElement('div');
-                        flashDiv.className = 'flash success status';
+                        flashDiv.className = 'flash status';
                         flashDiv.innerHTML = statusHtml;
                         document.querySelector('h1').insertAdjacentElement('afterend', flashDiv);
                         
@@ -1089,6 +1151,7 @@
             })
             .finally(() => {
                 button.disabled = false;
+                button.textContent = 'Check Status';
             });
         });
 

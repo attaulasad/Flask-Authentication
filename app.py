@@ -163,6 +163,11 @@ def get_bonus_credits():
         print(f"Error fetching bonus credits: {str(e)}")
         return 10
 
+# === Root Route ===
+@app.route('/')
+def root():
+    return redirect(url_for('user_login'))
+
 # === Admin Routes ===
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
@@ -172,7 +177,7 @@ def admin_login():
             password = request.form.get('password')
             if not username or not password:
                 flash("Username and password are required.", "danger")
-                return redirect(url_for('login'))
+                return render_template('login.html')
             if username == ADMIN_USERNAME and check_password_hash(ADMIN_PASSWORD_HASH, password):
                 session['admin_logged_in'] = True
                 session.permanent = True
@@ -183,12 +188,13 @@ def admin_login():
             else:
                 flash("Invalid username or password.", "danger")
                 log_action("admin_login_failed", {"username": username, "action": "invalid_credentials"}, "Invalid credentials")
-                return redirect(url_for('login'))
+                return render_template('login.html')
         return render_template('login.html')
     except Exception as e:
         log_action("admin_login_error", {"error": str(e)}, "Unexpected error")
         print(f"Error in admin_login: {str(e)}")
-        return abort(500, description=f"Internal Server Error: {str(e)}")
+        flash("An error occurred during login. Please try again.", "danger")
+        return render_template('login.html')
 
 @app.route('/admin/logout')
 @admin_login_required
@@ -557,7 +563,7 @@ def check_user_status_form():
                 "expiry": user_data["expiry"]
             }
             log_action("user_status_checked", {"username": username, "action": "Status checked"}, "Success")
-            flash(f"User Status: {username}, Credits: {status['credits']}, Expiry: {status['expiry']}", "success")
+            flash(f"User Status: {username}, Credits: {status['credits']}, Expiry: {status['expiry']}", "status")
             return redirect(url_for('admin_dashboard'))
     except Exception as e:
         log_action("check_user_error", {"error": str(e)}, "Unexpected error")
@@ -592,16 +598,6 @@ def delete_user_form():
                     return redirect(url_for('admin_dashboard'))
                     
                 username = decrypt_user_acc_data(account["username"]).lower()
-                
-                # Mark as deleted in token
-                c.execute("SELECT token FROM user_tokens WHERE account_id = ? ORDER BY id DESC LIMIT 1", (account_id,))
-                token_data = c.fetchone()
-                if token_data:
-                    user_data = decrypt_data(token_data["token"])
-                    user_data["deleted"] = True
-                    new_token = encrypt_data(user_data)
-                    c.execute("INSERT INTO user_tokens (account_id, token, credits, expiry_date) VALUES (?, ?, ?, ?)",
-                              (account_id, new_token, user_data["credits"], user_data["expiry"]))
                 
                 # Delete related records
                 c.execute("DELETE FROM api_keys WHERE account_id = ?", (account_id,))
