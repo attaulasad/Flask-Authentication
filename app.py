@@ -1,142 +1,62 @@
-# Import required Flask modules and utilities
-from flask import Flask, request, jsonify, flash, render_template, redirect, url_for, session, abort
-from crypto_utils import encrypt_data, decrypt_data, get_db_connection, hash_user_acc_data, decrypt_user_acc_data
+import os
+import re
+import sqlite3
+import hashlib
+from utils import DATABASE_
+from functools import wraps
+from dotenv import load_dotenv
 from log_utils import log_action
 from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
-from functools import wraps
-import os
-import hashlib
-import re
-from dotenv import load_dotenv
-import sqlite3
+from flask import Flask, request, jsonify, flash, render_template, redirect, url_for, session, abort
+from crypto_utils import encrypt_data, decrypt_data, get_db_connection, hash_user_acc_data, decrypt_user_acc_data
+
 
 # Load environment variables from .env file
 load_dotenv()
 
 # Initialize Flask application
 app = Flask(__name__)
-# Set secret key for session management
 app.secret_key = os.getenv("FLASK_SECRET_KEY")
-
-# Validate that FLASK_SECRET_KEY is set
 if not app.secret_key:
     raise ValueError("FLASK_SECRET_KEY environment variable must be set")
 
 # Set session timeout to 15 minutes
 app.permanent_session_lifetime = timedelta(minutes=15)
 
-# Load admin credentials from environment variables
+# Load & Hash admin password for secure storage
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME")
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
-# Validate that admin credentials are set
 if not ADMIN_USERNAME or not ADMIN_PASSWORD:
     raise ValueError("ADMIN_USERNAME and ADMIN_PASSWORD environment variables must be set")
-# Hash admin password for secure storage
 ADMIN_PASSWORD_HASH = generate_password_hash(ADMIN_PASSWORD)
 
-# Load admin API key from environment variables
+
+# Load & Validate admin API key from environment variables
 ADMIN_API_KEY = os.getenv("ADMIN_API_KEY")
-# Validate that admin API key is set
 if not ADMIN_API_KEY:
     raise ValueError("ADMIN_API_KEY environment variable must be set")
 
-# Register SQLite datetime adapter to handle datetime objects
-def adapt_datetime(dt):
-    # Convert datetime object to ISO format string for SQLite storage
-    return dt.isoformat()
 
+# Register SQLite datetime adapter to handle datetime objects
+def adapt_datetime(dt): return dt.isoformat()
 sqlite3.register_adapter(datetime, adapt_datetime)
 
-# Initialize database with required tables
-def init_db():
-    """
-    Initializes the SQLite database by creating necessary tables if they don't exist.
-    Handles accounts, API keys, user tokens, request history, and settings.
-    Logs success or failure and ensures BONUS_CREDITS setting is set.
-    """
-    try:
-        with get_db_connection() as conn:
-            c = conn.cursor()
-            # Create accounts table for user credentials
-            c.execute("""
-                CREATE TABLE IF NOT EXISTS accounts (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    username TEXT NOT NULL UNIQUE,
-                    password TEXT NOT NULL,
-                    created_at TEXT NOT NULL
-                )
-            """)
-            # Create api_keys table for API key management
-            c.execute("""
-                CREATE TABLE IF NOT EXISTS api_keys (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    api_key TEXT NOT NULL UNIQUE,
-                    account_id INTEGER NOT NULL UNIQUE,
-                    created_at TEXT NOT NULL,
-                    FOREIGN KEY (account_id) REFERENCES accounts(id)
-                )
-            """)
-            # Create user_tokens table for user authentication tokens
-            c.execute("""
-                CREATE TABLE IF NOT EXISTS user_tokens (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    account_id INTEGER NOT NULL,
-                    token TEXT NOT NULL,
-                    credits INTEGER NOT NULL,
-                    expiry_date TEXT NOT NULL,
-                    FOREIGN KEY (account_id) REFERENCES accounts(id)
-                )
-            """)
-            # Create request_history table for tracking user actions
-            c.execute("""
-                CREATE TABLE IF NOT EXISTS request_history (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    account_id INTEGER NOT NULL,
-                    request_type TEXT NOT NULL,
-                    credits INTEGER NOT NULL,
-                    timestamp TIMESTAMP NOT NULL,
-                    FOREIGN KEY (account_id) REFERENCES accounts(id)
-                )
-            """)
-            # Create settings table for application settings
-            c.execute("""
-                CREATE TABLE IF NOT EXISTS settings (
-                    key TEXT PRIMARY KEY,
-                    value TEXT NOT NULL
-                )
-            """)
-            # Ensure BONUS_CREDITS setting exists with default value
-            c.execute("SELECT value FROM settings WHERE key = 'BONUS_CREDITS'")
-            if c.fetchone() is None:
-                c.execute("INSERT OR REPLACE INTO settings (key, value) VALUES ('BONUS_CREDITS', '10')")
-            conn.commit()
-            # Log successful database initialization
-            log_action("database_initialized", {"action": "Tables created or verified"}, "Success")
-    except Exception as e:
-        # Log database initialization failure
-        log_action("database_init_failed", {"error": str(e)}, "Initialization error")
-        raise ValueError(f"Database initialization failed: {str(e)}")
 
-# Attempt to initialize database and handle errors
-try:
-    init_db()
-except Exception as e:
-    print(f"Error initializing database: {str(e)}")
-    raise
+SQL_DATABASE = DATABASE_()
+
 
 # Generate static API key based on username
 def generate_api_key(username):
     """
     Generates a static API key by hashing the username.
-    Args:
-        username (str): The username to generate the API key for.
-    Returns:
-        str: A SHA-256 hash of the lowercase username.
+    Args: username (str): The username to generate the API key for.
+    Returns: str: A SHA-256 hash of the lowercase username.
     """
-    # Convert username to lowercase and encode to UTF-8
     # Generate SHA-256 hash and return hexadecimal representation
     return hashlib.sha256(username.lower().encode('utf-8')).hexdigest()
+
+
 
 # Decorator to require admin login
 def admin_login_required(f):
@@ -148,11 +68,13 @@ def admin_login_required(f):
     def decorated_function(*args, **kwargs):
         # Check if admin is logged in
         if not session.get('admin_logged_in'):
-            # Flash error message and redirect to admin login
             flash("Please log in as admin to access this page.", "danger")
             return redirect(url_for('admin_login', next=request.url))
         return f(*args, **kwargs)
     return decorated_function
+
+
+
 
 # Decorator to require user login
 def user_login_required(f):
@@ -162,13 +84,14 @@ def user_login_required(f):
     """
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        # Check if user is logged in
         if not session.get('user_logged_in'):
-            # Flash error message and redirect to user login
             flash("Please log in to access your dashboard.", "danger")
             return redirect(url_for('user_login', next=request.url))
         return f(*args, **kwargs)
     return decorated_function
+
+
+
 
 # Decorator to require valid API key
 def api_key_required(f):
@@ -178,73 +101,72 @@ def api_key_required(f):
     """
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        # Get API key from Authorization header
         api_key = request.headers.get("Authorization")
-        # Check if API key is present and starts with "Bearer "
         if not api_key or not api_key.startswith("Bearer "):
             return jsonify({"error": "API key missing or invalid"}), 400
-        # Extract API key value
+        
         api_key = api_key.replace("Bearer ", "")
-        with get_db_connection() as conn:
-            c = conn.cursor()
-            # Query api_keys table for matching API key
-            c.execute("SELECT account_id FROM api_keys WHERE api_key = ?", (api_key,))
-            account = c.fetchone()
-            # Return error if API key is invalid
-            if not account:
-                return jsonify({"error": "Invalid API key"}), 401
-            # Attach account_id to request
-            request.account_id = account["account_id"]
+        account = SQL_DATABASE.execute_query(
+            query = "SELECT account_id FROM api_keys WHERE api_key = ?",
+            args = (api_key,)
+        )
+        if not account: return jsonify({"error": "Invalid API key"}), 401
+        request.account_id = account["account_id"]
         return f(*args, **kwargs)
+    
     return decorated_function
+
+
 
 # Validate email format
 def is_valid_email(email):
     """
     Validates email format using a regular expression.
-    Args:
-        email (str): The email address to validate.
-    Returns:
-        bool: True if email is valid, False otherwise.
+    Args: email (str): The email address to validate.
+    Returns: bool: True if email is valid, False otherwise.
     """
-    # Define regex pattern for email validation
     pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-    # Return True if email matches pattern
     return re.match(pattern, email) is not None
+
+
+
 
 # Get BONUS_CREDITS from settings
 def get_bonus_credits():
     """
     Retrieves the BONUS_CREDITS value from the settings table.
     Returns default value of 10 if retrieval fails.
-    Returns:
-        int: The number of bonus credits.
+    Returns:int: The number of bonus credits.
     """
     try:
-        with get_db_connection() as conn:
-            c = conn.cursor()
-            # Query settings table for BONUS_CREDITS
-            c.execute("SELECT value FROM settings WHERE key = 'BONUS_CREDITS'")
-            result = c.fetchone()
-            # Return integer value or default to 10
-            return int(result['value']) if result else 10
+        result = SQL_DATABASE.execute_query(
+            query = "SELECT value FROM settings WHERE key = 'BONUS_CREDITS'",
+            args = None
+        )
+        return int(result['value']) if result else 10
     except Exception as e:
-        # Log error and return default value
         log_action("get_bonus_credits_failed", {"error": str(e)}, "Using default 10")
         print(f"Error fetching bonus credits: {str(e)}")
         return 10
 
-# === Root Route ===
+
+
+
+
 @app.route('/')
 def root():
     """
     Redirects to the user login page.
-    Returns:
-        Response: Redirect to user_login endpoint.
+    Returns:Response: Redirect to user_login endpoint.
     """
     return redirect(url_for('user_login'))
 
-# === Admin Routes ===
+
+
+###########################################################
+########################## ADMIN ##########################
+###########################################################
+
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
     """
@@ -256,52 +178,51 @@ def admin_login():
     """
     try:
         if request.method == 'POST':
-            # Get username and password from form
+
             username = request.form.get('username')
             password = request.form.get('password')
-            # Validate input
+
             if not username or not password:
                 flash("Username and password are required.", "danger")
                 return render_template('login.html')
-            # Check credentials against admin credentials
+
             if username == ADMIN_USERNAME and check_password_hash(ADMIN_PASSWORD_HASH, password):
-                # Set session variables for admin login
-                session['admin_logged_in'] = True
+                session['admin_logged_in'] = True   # Set session variables for admin login
                 session.permanent = True
                 flash("Logged in successfully!", "success")
-                # Log successful login
                 log_action("admin_login", {"username": username, "action": "login_success"}, "Success")
-                # Redirect to next URL or admin dashboard
-                next_url = request.args.get('next') or url_for('admin_dashboard')
+                next_url = request.args.get('next') or url_for('admin_dashboard')  # Redirect to next URL or admin dashboard
                 return redirect(next_url)
             else:
-                # Flash error for invalid credentials
                 flash("Invalid username or password.", "danger")
-                # Log failed login attempt
                 log_action("admin_login_failed", {"username": username, "action": "invalid_credentials"}, "Invalid credentials")
                 return render_template('login.html')
         return render_template('login.html')
+    
     except Exception as e:
-        # Log unexpected error
         log_action("admin_login_error", {"error": str(e)}, "Unexpected error")
         print(f"Error in admin_login: {str(e)}")
         flash("An error occurred during login. Please try again.", "danger")
         return render_template('login.html')
+
+
+
 
 @app.route('/admin/logout')
 @admin_login_required
 def admin_logout():
     """
     Logs out the admin user by clearing session data.
-    Returns:
-        Response: Redirects to admin login page.
+    Returns: Response: Redirects to admin login page.
     """
-    # Remove admin login session
     session.pop('admin_logged_in', None)
     flash("Logged out successfully.", "success")
-    # Log successful logout
     log_action("admin_logout", {"action": "logout_success"}, "Success")
     return redirect(url_for('admin_login'))
+
+
+
+
 
 @app.route('/admin')
 @admin_login_required
@@ -309,8 +230,7 @@ def admin_dashboard():
     """
     Displays the admin dashboard with user and API key information.
     Retrieves active API keys, user list, and bonus credits.
-    Returns:
-        Response: Renders admin dashboard template.
+    Returns: Response: Renders admin dashboard template.
     """
     try:
         with get_db_connection() as conn:
@@ -381,6 +301,11 @@ def admin_dashboard():
         flash(f"Error loading dashboard: {str(e)}", "danger")
         return redirect(url_for('admin_login'))
 
+
+
+
+
+
 @app.route('/admin/update_bonus', methods=['POST'])
 @admin_login_required
 def update_bonus():
@@ -415,6 +340,10 @@ def update_bonus():
         log_action("update_bonus_error", {"username": "admin", "action": "update_bonus", "error": str(e)}, "Unexpected error")
         flash("Error updating bonus credits.", "danger")
         return redirect(url_for('admin_dashboard'))
+
+
+
+
 
 @app.route('/admin/create_user_form', methods=['POST'])
 @admin_login_required
@@ -497,6 +426,10 @@ def create_user_form():
         print(f"Error in create_user_form: {str(e)}")
         flash(f"Failed to create account: {str(e)}", "danger")
         return redirect(url_for('admin_dashboard'))
+
+
+
+
 
 @app.route('/admin/generate_api_key_form', methods=['POST'])
 @admin_login_required
@@ -607,6 +540,9 @@ def generate_api_key_form():
         flash(f"Failed to generate API key: {str(e)}", "danger")
         return redirect(url_for('admin_dashboard'))
 
+
+
+
 @app.route('/admin/refill_credits_form', methods=['POST'])
 @admin_login_required
 def refill_credits_form():
@@ -666,6 +602,10 @@ def refill_credits_form():
         print(f"Error in refill_credits_form: {str(e)}")
         flash(f"Error refilling credits: {str(e)}", "danger")
         return redirect(url_for('admin_dashboard'))
+
+
+
+
 
 @app.route('/admin/extend_time_form', methods=['POST'])
 @admin_login_required
@@ -744,6 +684,10 @@ def extend_time_form():
         flash(f"Error: {str(e)}", "danger")
         return redirect(url_for('admin_dashboard'))
 
+
+
+
+
 @app.route('/admin/check_user_status_form', methods=['POST'])
 @admin_login_required
 def check_user_status_form():
@@ -792,6 +736,9 @@ def check_user_status_form():
         print(f"Error: {str(e)}")
         flash(f"Error: {str(e)}", "danger")
         return redirect(url_for('admin_dashboard'))
+
+
+
 
 @app.route('/admin/delete_user_form', methods=['POST'])
 @admin_login_required
@@ -849,6 +796,10 @@ def delete_user_form():
         print(f"Error in delete_user_form: {str(e)}")
         flash(f"Error deleting user: {str(e)}", "danger")
         return redirect(url_for('admin_dashboard'))
+
+
+
+
 
 @app.route('/admin/delete_api_key_form', methods=['POST'])
 @admin_login_required
@@ -912,6 +863,11 @@ def delete_api_key_form():
         print(f"Error in delete_api_key: {str(e)}")
         flash(f"Error deleting API key: {str(e)}", "danger")
         return redirect(url_for('admin_dashboard'))
+
+
+
+
+
 
 # === User Routes ===
 @app.route('/signup', methods=['GET', 'POST'])
@@ -1002,6 +958,10 @@ def signup():
         print(f"Error in signup: {str(e)}")
         flash(f"Error creating account: {str(e)}", "danger")
         return redirect(url_for('signup'))
+
+
+
+
 
 @app.route('/user_login', methods=['GET', 'POST'])
 def user_login():
